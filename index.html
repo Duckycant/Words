@@ -4,35 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Word Editor PRO</title>
-
 <style>
 *{box-sizing:border-box}
+:root{--paper-width:8.5in;--paper-height:11in;--mt:1in;--mr:1in;--mb:1in;--ml:1in}
 
-:root{
- --paper-width:8.27in;
- --paper-height:11.69in;
- --mt:1in;
- --mr:1in;
- --mb:1in;
- --ml:1in
+html,body{
+ width:100%;
+ height:100%;
+ margin:0;
+ overflow:hidden;
 }
 
 body{
- margin:0;
  background:#e8edf4;
  color:#222;
- font-family:Arial,sans-serif
+ font-family:Arial,sans-serif;
+ display:flex;
+ flex-direction:column;
+ min-height:0;
 }
 
 header{
  background:#185abd;
- color:white;
+ color:#fff;
  padding:12px 14px;
  display:flex;
  align-items:center;
  justify-content:space-between;
  gap:10px;
- flex-wrap:wrap
+ flex-wrap:wrap;
+ flex-shrink:0;
 }
 
 header h2{font-size:19px;margin:0}
@@ -41,7 +42,7 @@ header h2{font-size:19px;margin:0}
  display:flex;
  align-items:center;
  gap:7px;
- flex-wrap:wrap
+ flex-wrap:wrap;
 }
 
 button,select,input{font:inherit}
@@ -49,32 +50,28 @@ button,select,input{font:inherit}
 button{
  padding:8px 10px;
  border:1px solid #c8ced8;
- background:white;
+ background:#fff;
  border-radius:5px;
- cursor:pointer
+ cursor:pointer;
 }
 
 button:active{background:#dce8fa}
-
-.actions button{
- color:#185abd;
- font-weight:bold
-}
+.actions button{color:#185abd;font-weight:bold}
 
 .toolbar{
- position:sticky;
- top:0;
+ position:relative;
  z-index:20;
- background:white;
+ background:#fff;
  padding:10px;
- border-bottom:1px solid #ccc
+ border-bottom:1px solid #ccc;
+ flex-shrink:0;
 }
 
 .toolbar select,.toolbar input{
  min-height:34px;
  padding:6px;
  border:1px solid #ccc;
- border-radius:4px
+ border-radius:4px;
 }
 
 .toolbar input[type=number]{width:76px}
@@ -84,20 +81,21 @@ button:active{background:#dce8fa}
  display:flex;
  align-items:center;
  gap:5px;
- font-size:12px
+ font-size:12px;
 }
 
 .settings{
- background:white;
+ background:#fff;
  padding:12px;
- border-bottom:1px solid #ddd
+ border-bottom:1px solid #ddd;
+ flex-shrink:0;
 }
 
 .settings input,.settings select{
  width:76px;
  padding:6px;
  border:1px solid #ccc;
- border-radius:4px
+ border-radius:4px;
 }
 
 .settings select{width:auto}
@@ -105,58 +103,56 @@ button:active{background:#dce8fa}
 .page-tools{
  background:#f8faff;
  padding:10px;
- border-bottom:1px solid #ddd
+ border-bottom:1px solid #ddd;
+ flex-shrink:0;
 }
 
 .page-tools button{
  border-color:#185abd;
  color:#185abd;
- font-weight:bold
+ font-weight:bold;
 }
 
-/* WORKSPACE SCROLLS, NOT THE PAPER */
-
+/* Main scrolling area: swipe anywhere in this area */
 .workspace{
  padding:25px 10px 50px;
+ flex:1 1 auto;
+ min-height:0;
+ min-width:0;
  width:100%;
  overflow:auto;
- overscroll-behavior:contain
+ overscroll-behavior:contain;
+ -webkit-overflow-scrolling:touch;
+ touch-action:pan-x pan-y;
+ position:relative;
 }
 
+/* Pages stay at their real paper dimensions */
 #pages{
  display:flex;
  flex-direction:column;
  align-items:center;
  gap:25px;
  width:max-content;
- min-width:100%
+ min-width:100%;
+ padding:0 10px 20px;
 }
-
-/* FIXED PAPER DIMENSIONS */
 
 .paper{
  position:relative;
- display:block;
- box-sizing:border-box;
-
  width:var(--paper-width)!important;
  height:var(--paper-height)!important;
-
- min-width:var(--paper-width)!important;
- min-height:var(--paper-height)!important;
-
- max-width:none!important;
- max-height:none!important;
-
- flex:0 0 var(--paper-width);
- flex-shrink:0;
-
- background:white;
+ min-width:var(--paper-width);
+ min-height:var(--paper-height);
+ max-width:none;
+ max-height:none;
+ background:#fff;
  box-shadow:0 2px 12px #0002;
-
+ flex:none;
+ flex-shrink:0;
  overflow:hidden;
  transform:none;
- touch-action:pan-y
+ touch-action:pan-y;
 }
 
 .paper:before{
@@ -166,65 +162,56 @@ button:active{background:#dce8fa}
  right:10px;
  color:#b7b7b7;
  font:10px Arial;
- pointer-events:none
+ pointer-events:none;
 }
-
-/* WRITING AREA */
 
 .paper-content{
  position:absolute;
  inset:var(--mt) var(--mr) var(--mb) var(--ml);
-
  outline:none;
  overflow:hidden;
-
- min-width:0;
  min-height:0;
-
  overflow-wrap:anywhere;
- word-break:normal;
-
  font-family:"Times New Roman",serif;
  font-size:12pt;
  line-height:1.5;
- white-space:normal
+ white-space:normal;
+ touch-action:pan-x pan-y;
 }
 
 .paper-content:empty:after{
  content:"Start writing your document here...";
  color:#aaa;
- pointer-events:none
+ pointer-events:none;
 }
 
 .paper-content p{margin-top:0}
 .paper-content:focus{outline:none}
-
-.paper-content ul,
-.paper-content ol{
- padding-left:30px
-}
+.paper-content ul,.paper-content ol{padding-left:30px}
 
 .status{
- position:sticky;
- bottom:0;
- background:white;
+ position:relative;
+ flex-shrink:0;
+ background:#fff;
  padding:10px;
  border-top:1px solid #ddd;
  text-align:center;
  font-size:12px;
  color:#666;
- z-index:5
+ z-index:5;
 }
 
 @media(max-width:600px){
-
  header h2{font-size:16px}
 
  .workspace{
   padding:14px 5px 45px;
+  flex:1 1 auto;
+  min-height:0;
   overflow-x:auto;
   overflow-y:auto;
-  -webkit-overflow-scrolling:touch
+  touch-action:pan-x pan-y;
+  -webkit-overflow-scrolling:touch;
  }
 
  .paper{
@@ -233,58 +220,62 @@ button:active{background:#dce8fa}
   min-width:var(--paper-width)!important;
   min-height:var(--paper-height)!important;
   max-width:none!important;
-  flex-shrink:0
+  flex-shrink:0;
  }
 
  .paper-content{
-  inset:var(--mt) var(--mr) var(--mb) var(--ml)
+  inset:var(--mt) var(--mr) var(--mb) var(--ml);
  }
 
  #pages{
   width:max-content;
   min-width:100%;
-  align-items:center
+  align-items:center;
+  padding:0 10px 20px;
  }
 }
 
 @media print{
+ @page{size:var(--paper-width) var(--paper-height);margin:0}
 
- @page{
-  size:var(--paper-width) var(--paper-height);
-  margin:0
+ html,body{
+  height:auto;
+  overflow:visible;
  }
 
- body{background:white}
+ body{
+  background:#fff;
+  display:block;
+ }
 
  header,.toolbar,.settings,.page-tools,.status{
-  display:none!important
+  display:none!important;
  }
 
  .workspace{
   padding:0;
-  overflow:visible
+  overflow:visible;
  }
 
  #pages{
   display:block;
   min-width:0;
-  width:auto
+  width:auto;
  }
 
  .paper{
   width:var(--paper-width)!important;
   height:var(--paper-height)!important;
-  min-height:var(--paper-height)!important;
   box-shadow:none;
   margin:0;
   overflow:hidden;
   break-after:page;
-  page-break-after:always
+  page-break-after:always;
  }
 
  .paper:last-child{
   break-after:auto;
-  page-break-after:auto
+  page-break-after:auto;
  }
 
  .paper-content{overflow:visible}
@@ -296,8 +287,7 @@ button:active{background:#dce8fa}
 <body>
 
 <header>
- <h2>📄 Word Editor BETA by andro</h2>
-
+ <h2>📄 Word Editor PRO</h2>
  <div class="actions">
   <button onclick="downloadHTML()">💾 Download HTML</button>
   <button onclick="downloadPDF()">📕 PDF / Print</button>
@@ -306,20 +296,12 @@ button:active{background:#dce8fa}
 </header>
 
 <div class="toolbar">
-
  <button onclick="newDocument()">📄 New</button>
-
  <button onclick="document.getElementById('fileInput').click()">📂 Open</button>
 
- <input
-  id="fileInput"
-  type="file"
-  accept=".html,.htm,.txt"
-  hidden
-  onchange="openDocument(event)"
- >
+ <input id="fileInput" type="file" accept=".html,.htm,.txt" hidden onchange="openDocument(event)">
 
- <select id="fontFamily" onchange="changeFont(this.value)">
+ <select id="fontFamily" aria-label="Font family" onchange="changeFont(this.value)">
   <option>Arial</option>
   <option>Arial Black</option>
   <option>Calibri</option>
@@ -346,15 +328,7 @@ button:active{background:#dce8fa}
   <option>monospace</option>
  </select>
 
- <input
-  type="number"
-  id="fontSize"
-  value="12"
-  min="1"
-  max="500"
-  step=".5"
- >
-
+ <input type="number" id="fontSize" value="12" min="1" max="500" step=".5" aria-label="Font size in points">
  <button onclick="applySize()">Apply Size</button>
 
  <button onclick="format('bold')"><b>B</b></button>
@@ -372,30 +346,15 @@ button:active{background:#dce8fa}
  <button onclick="format('indent')">↦</button>
  <button onclick="format('outdent')">↤</button>
 
- <label>Text
-  <input
-   type="color"
-   value="#000000"
-   onchange="format('foreColor',this.value)"
-  >
- </label>
-
- <label>Highlight
-  <input
-   type="color"
-   value="#ffff00"
-   onchange="format('hiliteColor',this.value)"
-  >
- </label>
+ <label>Text <input type="color" value="#000000" onchange="format('foreColor',this.value)"></label>
+ <label>Highlight <input type="color" value="#ffff00" onchange="format('hiliteColor',this.value)"></label>
 
  <button onclick="format('undo')">↶ Undo</button>
  <button onclick="format('redo')">↷ Redo</button>
  <button onclick="format('removeFormat')">Clear Format</button>
-
 </div>
 
 <div class="settings">
-
  <label>Paper:
   <select id="paperSize" onchange="setPaperSize()">
    <option value="short">Short Bond</option>
@@ -441,7 +400,6 @@ button:active{background:#dce8fa}
  </label>
 
  <button onclick="applySettings()">Apply</button>
-
 </div>
 
 <div class="page-tools">
@@ -451,7 +409,7 @@ button:active{background:#dce8fa}
  <span id="pageCount">Pages: 1</span>
 </div>
 
-<div class="workspace">
+<div class="workspace" id="workspace">
  <div id="pages"></div>
 </div>
 
@@ -466,7 +424,6 @@ let savedRange=null;
 let activeEditor=null;
 let saveTimer=null;
 let restoring=false;
-let paginationRunning=false;
 
 const paperSizes={
  short:[8.5,11],
@@ -483,12 +440,13 @@ function getEditors(){
 }
 
 function getCurrentEditor(){
- if(activeEditor&&activeEditor.isConnected){
-  return activeEditor;
- }
-
+ if(activeEditor&&activeEditor.isConnected)return activeEditor;
  const editors=getEditors();
  return editors[editors.length-1]||null;
+}
+
+function setActive(editor){
+ activeEditor=editor;
 }
 
 function makePage(content="",focus=true){
@@ -499,28 +457,20 @@ function makePage(content="",focus=true){
  editor.className="paper-content";
  editor.contentEditable="true";
  editor.spellcheck=true;
-
  editor.setAttribute("role","textbox");
  editor.setAttribute("aria-multiline","true");
-
  editor.innerHTML=content;
 
- editor.addEventListener("focus",()=>{
-  activeEditor=editor;
- });
-
+ editor.addEventListener("focus",()=>setActive(editor));
  editor.addEventListener("mouseup",rememberSelection);
  editor.addEventListener("keyup",rememberSelection);
  editor.addEventListener("touchend",rememberSelection);
 
  editor.addEventListener("input",()=>{
-  activeEditor=editor;
+  setActive(editor);
   rememberSelection();
-
-  requestAnimationFrame(()=>{
-   paginateOverflow(editor);
-   saveAuto();
-  });
+  paginateOverflow(editor);
+  saveAuto();
  });
 
  page.appendChild(editor);
@@ -536,81 +486,54 @@ function makePage(content="",focus=true){
  return editor;
 }
 
-/* FIXED PAGE CREATION */
+function getNextEditor(editor){
+ const pages=[...pagesEl.children];
+ const index=pages.indexOf(editor.closest(".paper"));
 
-function createPageAfter(editor){
- const currentPage=editor.closest(".paper");
+ if(index<0)return null;
 
- const page=document.createElement("section");
- page.className="paper";
+ const nextPage=pages[index+1];
 
- const next=document.createElement("div");
- next.className="paper-content";
- next.contentEditable="true";
- next.spellcheck=true;
- next.setAttribute("role","textbox");
- next.setAttribute("aria-multiline","true");
-
- next.addEventListener("focus",()=>{
-  activeEditor=next;
- });
-
- next.addEventListener("mouseup",rememberSelection);
- next.addEventListener("keyup",rememberSelection);
- next.addEventListener("touchend",rememberSelection);
-
- next.addEventListener("input",()=>{
-  activeEditor=next;
-  rememberSelection();
-
-  requestAnimationFrame(()=>{
-   paginateOverflow(next);
-   saveAuto();
-  });
- });
-
- page.appendChild(next);
-
- if(currentPage.nextElementSibling){
-  pagesEl.insertBefore(page,currentPage.nextElementSibling);
- }else{
-  pagesEl.appendChild(page);
+ if(nextPage){
+  return nextPage.querySelector(".paper-content");
  }
 
+ const next=makePage("",false);
+ const newPage=next.closest(".paper");
+ const currentPage=editor.closest(".paper");
+
+ currentPage.after(newPage);
  renumberPages();
 
  return next;
 }
 
-/* FIND THE FIRST CHARACTER THAT DOES NOT FIT */
-
-function findOverflowPosition(editor){
- const editorBox=editor.getBoundingClientRect();
-
- const walker=document.createTreeWalker(
-  editor,
-  NodeFilter.SHOW_TEXT
- );
+function findFirstOverflowRange(editor){
+ const box=editor.getBoundingClientRect();
+ const walker=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT);
 
  let node;
 
  while((node=walker.nextNode())){
   const text=node.nodeValue||"";
+  const words=/\S+\s*/g;
+  let match;
 
-  for(let i=0;i<text.length;i++){
+  while((match=words.exec(text))){
    const range=document.createRange();
 
-   range.setStart(node,i);
-   range.setEnd(node,i+1);
+   range.setStart(node,match.index);
+   range.setEnd(node,match.index+match[0].length);
 
-   const rect=range.getBoundingClientRect();
+   const rects=range.getClientRects();
 
-   if(
-    rect.width>0 &&
-    rect.height>0 &&
-    rect.bottom>editorBox.bottom+1
-   ){
-    return {node:node,offset:i};
+   for(const rect of rects){
+    if(rect.bottom>box.bottom+1){
+     const result=document.createRange();
+     result.setStart(node,match.index);
+     result.setEnd(editor,editor.childNodes.length);
+     return result;
+    }
    }
   }
  }
@@ -618,116 +541,66 @@ function findOverflowPosition(editor){
  return null;
 }
 
-/* MOVE OVERFLOW TO NEXT SHEET */
+function paginateOverflow(editor){
+ if(!editor||!editor.isConnected)return;
 
-function paginateOverflow(startEditor){
- if(paginationRunning)return;
- if(!startEditor||!startEditor.isConnected)return;
+ let safety=0;
 
- paginationRunning=true;
+ while(editor.scrollHeight>editor.clientHeight+1&&safety++<100){
+  const range=findFirstOverflowRange(editor);
+  const next=getNextEditor(editor);
 
- try{
-  let editor=startEditor;
-  let safety=0;
+  if(!next)return;
 
-  while(
-   editor.scrollHeight>editor.clientHeight+1 &&
-   safety<100
-  ){
-   safety++;
+  if(range&&!range.collapsed){
+   const fragment=range.extractContents();
+   next.insertBefore(fragment,next.firstChild);
+  }else if(editor.lastChild){
+   next.insertBefore(editor.lastChild,next.firstChild);
+  }else{
+   break;
+  }
 
-   const overflow=findOverflowPosition(editor);
-   let next=getNextEditor(editor);
+  if(!next.firstChild)break;
 
-   if(!next){
-    next=createPageAfter(editor);
-   }
-
-   if(overflow){
-    const range=document.createRange();
-
-    range.setStart(overflow.node,overflow.offset);
-    range.setEnd(editor,editor.childNodes.length);
-
-    const fragment=range.extractContents();
-
-    if(fragment.childNodes.length){
-     next.insertBefore(fragment,next.firstChild);
-    }else{
-     break;
-    }
-
-   }else{
-    /*
-      Fallback for content such as images, tables,
-      empty paragraphs, or non-text elements.
-    */
-
-    const last=editor.lastChild;
-
-    if(!last)break;
-
-    next.insertBefore(last,next.firstChild);
-   }
-
-   if(editor.scrollHeight<=editor.clientHeight+1){
-    break;
-   }
-
+  if(next.scrollHeight>next.clientHeight+1){
    editor=next;
+  }else{
+   const sel=window.getSelection();
+   const caret=document.createRange();
+
+   caret.setStart(next,0);
+   caret.collapse(true);
+
+   sel.removeAllRanges();
+   sel.addRange(caret);
+
+   activeEditor=next;
+   savedRange=caret.cloneRange();
+   break;
   }
-
-  renumberPages();
-
-  /*
-    If content has moved, focus the page receiving
-    the overflow so typing can continue.
-  */
-
-  if(editor!==startEditor){
-   activeEditor=editor;
-  }
-
- }catch(error){
-  console.error("Pagination error:",error);
- }finally{
-  paginationRunning=false;
- }
-}
-
-function getNextEditor(editor){
- const page=editor.closest(".paper");
- const nextPage=page.nextElementSibling;
-
- if(nextPage){
-  return nextPage.querySelector(".paper-content");
  }
 
- return createPageAfter(editor);
+ renumberPages();
 }
 
 function renumberPages(){
- [...pagesEl.children].forEach((page,index)=>{
-  page.dataset.pageLabel="PAGE "+(index+1);
+ [...pagesEl.children].forEach((page,i)=>{
+  page.dataset.pageLabel="PAGE "+(i+1);
  });
 
  const count=pagesEl.children.length;
 
- document.getElementById("pageCount").textContent=
-  "Pages: "+count;
-
- statusText.textContent=
-  "Ready | Pages: "+count;
+ document.getElementById("pageCount").textContent="Pages: "+count;
+ statusText.textContent="Ready | Pages: "+count;
 }
 
-function placeCaretAtEnd(editor){
+function placeCaretAtEnd(el){
  const range=document.createRange();
-
- range.selectNodeContents(editor);
+ range.selectNodeContents(el);
  range.collapse(false);
 
  const sel=window.getSelection();
-
  sel.removeAllRanges();
  sel.addRange(range);
 
@@ -741,10 +614,9 @@ function rememberSelection(){
 
  const range=sel.getRangeAt(0);
 
- const editor=
-  range.commonAncestorContainer.nodeType===1
-   ?range.commonAncestorContainer.closest?.(".paper-content")
-   :range.commonAncestorContainer.parentElement?.closest(".paper-content");
+ const editor=range.commonAncestorContainer.nodeType===1
+  ?range.commonAncestorContainer.closest?.(".paper-content")
+  :range.commonAncestorContainer.parentElement?.closest(".paper-content");
 
  if(editor){
   activeEditor=editor;
@@ -760,28 +632,22 @@ function restoreSelection(){
  if(savedRange){
   const common=savedRange.commonAncestorContainer;
 
-  const owner=
-   common.nodeType===1
-    ?common.closest?.(".paper-content")
-    :common.parentElement?.closest(".paper-content");
+  const owner=common.nodeType===1
+   ?common.closest?.(".paper-content")
+   :common.parentElement?.closest(".paper-content");
 
   if(owner===editor){
    const sel=window.getSelection();
-
    sel.removeAllRanges();
    sel.addRange(savedRange);
-
    return true;
   }
  }
 
  editor.focus();
  placeCaretAtEnd(editor);
-
  return true;
 }
-
-/* FORMATTING */
 
 function format(command,value=null){
  const editor=getCurrentEditor();
@@ -812,9 +678,7 @@ function changeFont(font){
 }
 
 function applySize(){
- const size=Number(
-  document.getElementById("fontSize").value
- );
+ const size=Number(document.getElementById("fontSize").value);
 
  if(!Number.isFinite(size)||size<1||size>500){
   alert("Enter a size between 1 and 500 pt.");
@@ -842,15 +706,13 @@ function applySize(){
 
  try{
   range.surroundContents(span);
- }catch(error){
+ }catch(e){
   const fragment=range.extractContents();
-
   span.appendChild(fragment);
   range.insertNode(span);
  }
 
  const newRange=document.createRange();
-
  newRange.selectNodeContents(span);
 
  sel.removeAllRanges();
@@ -859,8 +721,6 @@ function applySize(){
  rememberSelection();
  saveAuto();
 }
-
-/* PAGE BUTTONS */
 
 function addPage(){
  const editor=makePage("",true);
@@ -885,9 +745,7 @@ function removeLastPage(){
   return;
  }
 
- if(!confirm("Delete the last page and all its content?")){
-  return;
- }
+ if(!confirm("Delete the last page and all its content?"))return;
 
  pagesEl.lastElementChild.remove();
 
@@ -898,8 +756,6 @@ function removeLastPage(){
  saveAuto();
 }
 
-/* PAPER SETTINGS */
-
 function setPaperSize(){
  const choice=document.getElementById("paperSize").value;
 
@@ -909,26 +765,17 @@ function setPaperSize(){
 
  if(!size)return;
 
- document.getElementById("paperWidth").value=
-  size[0].toFixed(2);
-
- document.getElementById("paperHeight").value=
-  size[1].toFixed(2);
+ document.getElementById("paperWidth").value=size[0].toFixed(2);
+ document.getElementById("paperHeight").value=size[1].toFixed(2);
 
  applySettings();
 }
 
 function applySettings(){
- let width=Number(
-  document.getElementById("paperWidth").value
- );
+ let width=Number(document.getElementById("paperWidth").value);
+ let height=Number(document.getElementById("paperHeight").value);
 
- let height=Number(
-  document.getElementById("paperHeight").value
- );
-
- const orientation=
-  document.getElementById("orientation").value;
+ const orientation=document.getElementById("orientation").value;
 
  if(orientation==="landscape"&&height>width){
   [width,height]=[height,width];
@@ -952,44 +799,26 @@ function applySettings(){
   return;
  }
 
- document.documentElement.style.setProperty(
-  "--paper-width",width+"in"
- );
-
- document.documentElement.style.setProperty(
-  "--paper-height",height+"in"
- );
-
+ document.documentElement.style.setProperty("--paper-width",width+"in");
+ document.documentElement.style.setProperty("--paper-height",height+"in");
  document.documentElement.style.setProperty("--mt",mt+"in");
  document.documentElement.style.setProperty("--mb",mb+"in");
  document.documentElement.style.setProperty("--ml",ml+"in");
  document.documentElement.style.setProperty("--mr",mr+"in");
 
- getEditors().forEach(editor=>{
-  requestAnimationFrame(()=>{
-   paginateOverflow(editor);
-  });
- });
-
  saveAuto();
  renumberPages();
 }
 
-/* DOCUMENT ACTIONS */
-
 function newDocument(){
- if(!confirm("Create a new document? This will replace the current document.")){
-  return;
- }
+ if(!confirm("Create a new document? This will replace the current document."))return;
 
  pagesEl.innerHTML="";
-
  savedRange=null;
  activeEditor=null;
  documentName="My-Document";
 
  makePage("",true);
-
  saveAuto();
  renumberPages();
 }
@@ -1016,8 +845,8 @@ function createHTML(){
  const ml=document.getElementById("marginLeft").value+"in";
  const mr=document.getElementById("marginRight").value+"in";
 
- const pageHTML=getEditors().map(editor=>
-  `<section class="paper"><div class="content">${editor.innerHTML}</div></section>`
+ const pageHTML=getEditors().map((ed,i)=>
+  `<section class="paper"><div class="content">${ed.innerHTML}</div></section>`
  ).join("\n");
 
  return `<!DOCTYPE html>
@@ -1036,25 +865,22 @@ body{margin:0;font-family:"Times New Roman",serif}
  padding:${mt} ${mr} ${mb} ${ml};
  overflow:hidden;
  break-after:page;
- page-break-after:always
+ page-break-after:always;
 }
-.paper:last-child{
- break-after:auto;
- page-break-after:auto
-}
+.paper:last-child{break-after:auto;page-break-after:auto}
 .content{
  height:100%;
  overflow:hidden;
  overflow-wrap:anywhere;
  font-size:12pt;
- line-height:1.5
+ line-height:1.5;
 }
 @media screen{
  body{background:#e8edf4;padding:20px}
  .paper{
   background:white;
   margin:0 auto 20px;
-  box-shadow:0 2px 12px #0002
+  box-shadow:0 2px 12px #0002;
  }
 }
 </style>
@@ -1068,7 +894,6 @@ function downloadFile(content,filename,type){
  const url=URL.createObjectURL(blob);
 
  const a=document.createElement("a");
-
  a.href=url;
  a.download=filename;
 
@@ -1094,15 +919,11 @@ function downloadPDF(){
  window.print();
 }
 
-/* SHARE: DOCUMENT INSIDE YOUR WEBSITE LINK */
-
 function collectDocumentData(){
  return {
   version:1,
   name:documentName,
-
-  pages:getEditors().map(editor=>editor.innerHTML),
-
+  pages:getEditors().map(ed=>ed.innerHTML),
   settings:{
    width:document.getElementById("paperWidth").value,
    height:document.getElementById("paperHeight").value,
@@ -1117,7 +938,6 @@ function collectDocumentData(){
 
 function encodeShareData(data){
  const bytes=new TextEncoder().encode(JSON.stringify(data));
-
  let binary="";
 
  bytes.forEach(byte=>{
@@ -1135,20 +955,12 @@ function decodeShareData(encoded){
   .replace(/-/g,"+")
   .replace(/_/g,"/");
 
- const padded=base64+"=".repeat(
-  (4-base64.length%4)%4
- );
-
+ const padded=base64+"=".repeat((4-base64.length%4)%4);
  const binary=atob(padded);
 
- const bytes=Uint8Array.from(
-  binary,
-  character=>character.charCodeAt(0)
- );
+ const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
 
- return JSON.parse(
-  new TextDecoder().decode(bytes)
- );
+ return JSON.parse(new TextDecoder().decode(bytes));
 }
 
 function loadDocumentData(data){
@@ -1171,7 +983,7 @@ function loadDocumentData(data){
   .replace(/[\\/\0]/g,"-")
   .slice(0,100);
 
- const settings=data.settings||{};
+ const s=data.settings||{};
 
  const fields=[
   ["paperWidth","width"],
@@ -1183,14 +995,13 @@ function loadDocumentData(data){
  ];
 
  fields.forEach(([id,key])=>{
-  if(settings[key]!=null){
-   document.getElementById(id).value=settings[key];
+  if(s[key]!=null){
+   document.getElementById(id).value=s[key];
   }
  });
 
- if(settings.orientation){
-  document.getElementById("orientation").value=
-   settings.orientation;
+ if(s.orientation){
+  document.getElementById("orientation").value=s.orientation;
  }
 
  restoring=false;
@@ -1202,70 +1013,46 @@ function loadDocumentData(data){
 
  renumberPages();
  saveAuto();
-
- getEditors().forEach(editor=>{
-  requestAnimationFrame(()=>{
-   paginateOverflow(editor);
-  });
- });
 }
 
 async function shareDocument(){
  try{
   const data=collectDocumentData();
-
   const encoded=encodeShareData(data);
 
-  const baseURL=
-   location.origin+
-   location.pathname+
-   location.search;
+  const baseURL=location.origin+location.pathname+location.search;
+  const shareURL=baseURL+"#sharedDoc="+encoded;
 
-  const shareURL=
-   baseURL+"#sharedDoc="+encoded;
-
-  if(location.protocol!=="https:"&&location.protocol!=="http:"){
-   alert("Please publish your website on GitHub Pages before sharing.");
+  if(!/^https?:$/.test(location.protocol)){
+   alert("Publish this website on GitHub Pages first. Then Share will create a link that opens the document on your website.");
    return;
   }
 
   if(shareURL.length>60000){
-   alert(
-    "Your document is too large for a share link. Try sharing a shorter document."
-   );
+   alert("This document is too large to fit safely in a share link. Try sharing a shorter document.");
    return;
   }
 
   if(navigator.share){
    await navigator.share({
     title:documentName,
-    text:"Open my document on this website:",
+    text:"Open this website link to view and edit the document:",
     url:shareURL
    });
-
   }else if(navigator.clipboard&&navigator.clipboard.writeText){
    await navigator.clipboard.writeText(shareURL);
-
-   alert(
-    "Website document link copied! Send it to anyone."
-   );
-
+   alert("Website link copied! Send it to someone. They can open and edit their own copy.");
   }else{
-   window.prompt(
-    "Copy this website link:",
-    shareURL
-   );
+   window.prompt("Copy this website link and send it:",shareURL);
   }
 
  }catch(error){
   if(error.name!=="AbortError"){
    console.error(error);
-   alert("Unable to share. Please try again.");
+   alert("Could not share the link. Please try again.");
   }
  }
 }
-
-/* OPEN FILE */
 
 function openDocument(event){
  const file=event.target.files?.[0];
@@ -1281,8 +1068,8 @@ function openDocument(event){
    const lines=String(reader.result).split(/\f/);
 
    lines.forEach(text=>{
-    const editor=makePage("",false);
-    editor.textContent=text;
+    const ed=makePage("",false);
+    ed.textContent=text;
    });
 
   }else{
@@ -1295,9 +1082,7 @@ function openDocument(event){
 
    if(sections.length){
     sections.forEach(section=>{
-     const content=section.querySelector(
-      ".content,.paper-content"
-     );
+     const content=section.querySelector(".content,.paper-content");
 
      makePage(
       content?content.innerHTML:section.innerHTML,
@@ -1313,9 +1098,7 @@ function openDocument(event){
      :[];
 
     if(oldEditors.length){
-     oldEditors.forEach(editor=>{
-      makePage(editor.innerHTML,false);
-     });
+     oldEditors.forEach(ed=>makePage(ed.innerHTML,false));
     }else{
      makePage(doc.body.innerHTML,false);
     }
@@ -1327,7 +1110,6 @@ function openDocument(event){
   }
 
   documentName=file.name.replace(/\.[^/.]+$/,"");
-
   activeEditor=getEditors()[0];
   savedRange=null;
 
@@ -1335,24 +1117,13 @@ function openDocument(event){
   saveAuto();
 
   statusText.textContent="Opened: "+file.name;
-
   event.target.value="";
-
-  getEditors().forEach(editor=>{
-   requestAnimationFrame(()=>{
-    paginateOverflow(editor);
-   });
-  });
  };
 
- reader.onerror=()=>{
-  alert("Could not open this file.");
- };
+ reader.onerror=()=>alert("Could not open this file.");
 
  reader.readAsText(file);
 }
-
-/* AUTOSAVE */
 
 function saveAuto(){
  if(restoring)return;
@@ -1363,9 +1134,7 @@ function saveAuto(){
   try{
    const data={
     name:documentName,
-
-    pages:getEditors().map(editor=>editor.innerHTML),
-
+    pages:getEditors().map(ed=>ed.innerHTML),
     settings:{
      width:document.getElementById("paperWidth").value,
      height:document.getElementById("paperHeight").value,
@@ -1377,15 +1146,12 @@ function saveAuto(){
     }
    };
 
-   localStorage.setItem(
-    "wordEditorPro",
-    JSON.stringify(data)
-   );
+   localStorage.setItem("wordEditorPro",JSON.stringify(data));
 
    statusText.textContent=
     "Changes automatically saved | Pages: "+getEditors().length;
 
-  }catch(error){
+  }catch(e){
    statusText.textContent="Browser storage unavailable";
   }
 
@@ -1402,9 +1168,7 @@ function restoreSaved(){
 
   const data=JSON.parse(raw);
 
-  if(!data||!Array.isArray(data.pages)){
-   return false;
-  }
+  if(!data||!Array.isArray(data.pages))return false;
 
   restoring=true;
   pagesEl.innerHTML="";
@@ -1422,44 +1186,38 @@ function restoreSaved(){
   }
 
   if(data.settings){
-   const settings=data.settings;
+   const s=data.settings;
 
-   const fields=[
+   for(const [id,key] of [
     ["paperWidth","width"],
     ["paperHeight","height"],
     ["marginTop","mt"],
     ["marginBottom","mb"],
     ["marginLeft","ml"],
     ["marginRight","mr"]
-   ];
-
-   fields.forEach(([id,key])=>{
-    if(settings[key]!=null){
-     document.getElementById(id).value=settings[key];
+   ]){
+    if(s[key]!=null){
+     document.getElementById(id).value=s[key];
     }
-   });
+   }
 
-   if(settings.orientation){
-    document.getElementById("orientation").value=
-     settings.orientation;
+   if(s.orientation){
+    document.getElementById("orientation").value=s.orientation;
    }
   }
 
   restoring=false;
-
   applySettings();
 
   activeEditor=getEditors()[0];
 
   return true;
 
- }catch(error){
+ }catch(e){
   restoring=false;
   return false;
  }
 }
-
-/* TRACK SELECTION */
 
 document.addEventListener("selectionchange",()=>{
  const sel=window.getSelection();
@@ -1468,10 +1226,9 @@ document.addEventListener("selectionchange",()=>{
 
  const node=sel.getRangeAt(0).commonAncestorContainer;
 
- const owner=
-  node.nodeType===1
-   ?node.closest?.(".paper-content")
-   :node.parentElement?.closest(".paper-content");
+ const owner=node.nodeType===1
+  ?node.closest?.(".paper-content")
+  :node.parentElement?.closest(".paper-content");
 
  if(owner&&owner.isConnected){
   activeEditor=owner;
@@ -1480,16 +1237,11 @@ document.addEventListener("selectionchange",()=>{
 });
 
 window.addEventListener("beforeunload",()=>{
- if(saveTimer){
-  clearTimeout(saveTimer);
- }
+ if(saveTimer)clearTimeout(saveTimer);
 });
 
-/* LOAD WEBSITE */
-
 window.addEventListener("load",()=>{
- const sharedMatch=
-  location.hash.match(/^#sharedDoc=(.+)$/);
+ const sharedMatch=location.hash.match(/^#sharedDoc=(.+)$/);
 
  if(sharedMatch){
   try{
@@ -1498,11 +1250,9 @@ window.addEventListener("load",()=>{
    loadDocumentData(sharedData);
 
    statusText.textContent=
-    "Shared document loaded | You can edit this copy";
+    "Shared document loaded | Edit your own copy";
 
   }catch(error){
-   console.error(error);
-
    alert("This shared document link is invalid or incomplete.");
 
    if(!restoreSaved()){
