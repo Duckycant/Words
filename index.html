@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Word Editor PRO</title>
+
+<style>
+*{box-sizing:border-box}
+
+:root{
+ --paper-width:8.27in;
+ --paper-height:11.69in;
+ --mt:1in;
+ --mr:1in;
+ --mb:1in;
+ --ml:1in
+}
+
+body{
+ margin:0;
+ background:#e8edf4;
+ color:#222;
+ font-family:Arial,sans-serif
+}
+
+header{
+ background:#185abd;
+ color:white;
+ padding:12px 14px;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:10px;
+ flex-wrap:wrap
+}
+
+header h2{font-size:19px;margin:0}
+
+.actions,.toolbar,.settings,.page-tools{
+ display:flex;
+ align-items:center;
+ gap:7px;
+ flex-wrap:wrap
+}
+
+button,select,input{font:inherit}
+
+button{
+ padding:8px 10px;
+ border:1px solid #c8ced8;
+ background:white;
+ border-radius:5px;
+ cursor:pointer
+}
+
+button:active{background:#dce8fa}
+
+.actions button{
+ color:#185abd;
+ font-weight:bold
+}
+
+.toolbar{
+ position:sticky;
+ top:0;
+ z-index:20;
+ background:white;
+ padding:10px;
+ border-bottom:1px solid #ccc
+}
+
+.toolbar select,.toolbar input{
+ min-height:34px;
+ padding:6px;
+ border:1px solid #ccc;
+ border-radius:4px
+}
+
+.toolbar input[type=number]{width:76px}
+.toolbar input[type=color]{width:40px;padding:2px}
+
+.toolbar label,.settings label{
+ display:flex;
+ align-items:center;
+ gap:5px;
+ font-size:12px
+}
+
+.settings{
+ background:white;
+ padding:12px;
+ border-bottom:1px solid #ddd
+}
+
+.settings input,.settings select{
+ width:76px;
+ padding:6px;
+ border:1px solid #ccc;
+ border-radius:4px
+}
+
+.settings select{width:auto}
+
+.page-tools{
+ background:#f8faff;
+ padding:10px;
+ border-bottom:1px solid #ddd
+}
+
+.page-tools button{
+ border-color:#185abd;
+ color:#185abd;
+ font-weight:bold
+}
+
+/* WORKSPACE SCROLLS, NOT THE PAPER */
+
+.workspace{
+ padding:25px 10px 50px;
+ width:100%;
+ overflow:auto;
+ overscroll-behavior:contain
+}
+
+#pages{
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ gap:25px;
+ width:max-content;
+ min-width:100%
+}
+
+/* FIXED PAPER DIMENSIONS */
+
+.paper{
+ position:relative;
+ display:block;
+ box-sizing:border-box;
+
+ width:var(--paper-width)!important;
+ height:var(--paper-height)!important;
+
+ min-width:var(--paper-width)!important;
+ min-height:var(--paper-height)!important;
+
+ max-width:none!important;
+ max-height:none!important;
+
+ flex:0 0 var(--paper-width);
+ flex-shrink:0;
+
+ background:white;
+ box-shadow:0 2px 12px #0002;
+
+ overflow:hidden;
+ transform:none;
+ touch-action:pan-y
+}
+
+.paper:before{
+ content:attr(data-page-label);
+ position:absolute;
+ top:5px;
+ right:10px;
+ color:#b7b7b7;
+ font:10px Arial;
+ pointer-events:none
+}
+
+/* WRITING AREA */
+
+.paper-content{
+ position:absolute;
+ inset:var(--mt) var(--mr) var(--mb) var(--ml);
+
+ outline:none;
+ overflow:hidden;
+
+ min-width:0;
+ min-height:0;
+
+ overflow-wrap:anywhere;
+ word-break:normal;
+
+ font-family:"Times New Roman",serif;
+ font-size:12pt;
+ line-height:1.5;
+ white-space:normal
+}
+
+.paper-content:empty:after{
+ content:"Start writing your document here...";
+ color:#aaa;
+ pointer-events:none
+}
+
+.paper-content p{margin-top:0}
+.paper-content:focus{outline:none}
+
+.paper-content ul,
+.paper-content ol{
+ padding-left:30px
+}
+
+.status{
+ position:sticky;
+ bottom:0;
+ background:white;
+ padding:10px;
+ border-top:1px solid #ddd;
+ text-align:center;
+ font-size:12px;
+ color:#666;
+ z-index:5
+}
+
+@media(max-width:600px){
+
+ header h2{font-size:16px}
+
+ .workspace{
+  padding:14px 5px 45px;
+  overflow-x:auto;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch
+ }
+
+ .paper{
+  width:var(--paper-width)!important;
+  height:var(--paper-height)!important;
+  min-width:var(--paper-width)!important;
+  min-height:var(--paper-height)!important;
+  max-width:none!important;
+  flex-shrink:0
+ }
+
+ .paper-content{
+  inset:var(--mt) var(--mr) var(--mb) var(--ml)
+ }
+
+ #pages{
+  width:max-content;
+  min-width:100%;
+  align-items:center
+ }
+}
+
+@media print{
+
+ @page{
+  size:var(--paper-width) var(--paper-height);
+  margin:0
+ }
+
+ body{background:white}
+
+ header,.toolbar,.settings,.page-tools,.status{
+  display:none!important
+ }
+
+ .workspace{
+  padding:0;
+  overflow:visible
+ }
+
+ #pages{
+  display:block;
+  min-width:0;
+  width:auto
+ }
+
+ .paper{
+  width:var(--paper-width)!important;
+  height:var(--paper-height)!important;
+  min-height:var(--paper-height)!important;
+  box-shadow:none;
+  margin:0;
+  overflow:hidden;
+  break-after:page;
+  page-break-after:always
+ }
+
+ .paper:last-child{
+  break-after:auto;
+  page-break-after:auto
+ }
+
+ .paper-content{overflow:visible}
+ .paper:before{display:none}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <h2>📄 Word Editor BETA by andro</h2>
+
+ <div class="actions">
+  <button onclick="downloadHTML()">💾 Download HTML</button>
+  <button onclick="downloadPDF()">📕 PDF / Print</button>
+  <button onclick="shareDocument()">📤 Share</button>
+ </div>
+</header>
+
+<div class="toolbar">
+
+ <button onclick="newDocument()">📄 New</button>
+
+ <button onclick="document.getElementById('fileInput').click()">📂 Open</button>
+
+ <input
+  id="fileInput"
+  type="file"
+  accept=".html,.htm,.txt"
+  hidden
+  onchange="openDocument(event)"
+ >
+
+ <select id="fontFamily" onchange="changeFont(this.value)">
+  <option>Arial</option>
+  <option>Arial Black</option>
+  <option>Calibri</option>
+  <option>Cambria</option>
+  <option>Candara</option>
+  <option>Comic Sans MS</option>
+  <option>Consolas</option>
+  <option>Courier New</option>
+  <option>Georgia</option>
+  <option>Garamond</option>
+  <option>Impact</option>
+  <option>Lucida Console</option>
+  <option>Palatino Linotype</option>
+  <option>Tahoma</option>
+  <option selected>Times New Roman</option>
+  <option>Trebuchet MS</option>
+  <option>Verdana</option>
+  <option>Bookman Old Style</option>
+  <option>Century Gothic</option>
+  <option>Segoe UI</option>
+  <option>Roboto</option>
+  <option>serif</option>
+  <option>sans-serif</option>
+  <option>monospace</option>
+ </select>
+
+ <input
+  type="number"
+  id="fontSize"
+  value="12"
+  min="1"
+  max="500"
+  step=".5"
+ >
+
+ <button onclick="applySize()">Apply Size</button>
+
+ <button onclick="format('bold')"><b>B</b></button>
+ <button onclick="format('italic')"><i>I</i></button>
+ <button onclick="format('underline')"><u>U</u></button>
+ <button onclick="format('strikeThrough')"><s>S</s></button>
+
+ <button onclick="format('justifyLeft')">⬅</button>
+ <button onclick="format('justifyCenter')">Center</button>
+ <button onclick="format('justifyRight')">➡</button>
+ <button onclick="format('justifyFull')">Justify</button>
+
+ <button onclick="format('insertUnorderedList')">• List</button>
+ <button onclick="format('insertOrderedList')">1. List</button>
+ <button onclick="format('indent')">↦</button>
+ <button onclick="format('outdent')">↤</button>
+
+ <label>Text
+  <input
+   type="color"
+   value="#000000"
+   onchange="format('foreColor',this.value)"
+  >
+ </label>
+
+ <label>Highlight
+  <input
+   type="color"
+   value="#ffff00"
+   onchange="format('hiliteColor',this.value)"
+  >
+ </label>
+
+ <button onclick="format('undo')">↶ Undo</button>
+ <button onclick="format('redo')">↷ Redo</button>
+ <button onclick="format('removeFormat')">Clear Format</button>
+
+</div>
+
+<div class="settings">
+
+ <label>Paper:
+  <select id="paperSize" onchange="setPaperSize()">
+   <option value="short">Short Bond</option>
+   <option value="long">Long Bond</option>
+   <option value="a4" selected>A4</option>
+   <option value="a3">A3</option>
+   <option value="a5">A5</option>
+   <option value="letter">Letter</option>
+   <option value="legal">Legal</option>
+   <option value="custom">Custom</option>
+  </select>
+ </label>
+
+ <label>Width:
+  <input type="number" id="paperWidth" value="8.27" min="1" max="100" step=".01">
+ </label>
+
+ <label>Height:
+  <input type="number" id="paperHeight" value="11.69" min="1" max="100" step=".01">
+ </label>
+
+ <label>Top:
+  <input type="number" id="marginTop" value="1" min="0" max="5" step=".1">
+ </label>
+
+ <label>Bottom:
+  <input type="number" id="marginBottom" value="1" min="0" max="5" step=".1">
+ </label>
+
+ <label>Left:
+  <input type="number" id="marginLeft" value="1" min="0" max="5" step=".1">
+ </label>
+
+ <label>Right:
+  <input type="number" id="marginRight" value="1" min="0" max="5" step=".1">
+ </label>
+
+ <label>Orientation:
+  <select id="orientation" onchange="applySettings()">
+   <option value="portrait">Portrait</option>
+   <option value="landscape">Landscape</option>
+  </select>
+ </label>
+
+ <button onclick="applySettings()">Apply</button>
+
+</div>
+
+<div class="page-tools">
+ <button onclick="addPage()">＋ Add Page</button>
+ <button onclick="removeLastPage()">－ Remove Last Page</button>
+ <button onclick="insertPageBreak()">↵ Add Page & Continue</button>
+ <span id="pageCount">Pages: 1</span>
+</div>
+
+<div class="workspace">
+ <div id="pages"></div>
+</div>
+
+<div class="status" id="status">Ready | Pages: 1</div>
+
+<script>
+const pagesEl=document.getElementById("pages");
+const statusText=document.getElementById("status");
+
+let documentName="My-Document";
+let savedRange=null;
+let activeEditor=null;
+let saveTimer=null;
+let restoring=false;
+let paginationRunning=false;
+
+const paperSizes={
+ short:[8.5,11],
+ long:[8.5,13],
+ a4:[210/25.4,297/25.4],
+ a3:[297/25.4,420/25.4],
+ a5:[148/25.4,210/25.4],
+ letter:[8.5,11],
+ legal:[8.5,14]
+};
+
+function getEditors(){
+ return [...document.querySelectorAll(".paper-content")];
+}
+
+function getCurrentEditor(){
+ if(activeEditor&&activeEditor.isConnected){
+  return activeEditor;
+ }
+
+ const editors=getEditors();
+ return editors[editors.length-1]||null;
+}
+
+function makePage(content="",focus=true){
+ const page=document.createElement("section");
+ page.className="paper";
+
+ const editor=document.createElement("div");
+ editor.className="paper-content";
+ editor.contentEditable="true";
+ editor.spellcheck=true;
+
+ editor.setAttribute("role","textbox");
+ editor.setAttribute("aria-multiline","true");
+
+ editor.innerHTML=content;
+
+ editor.addEventListener("focus",()=>{
+  activeEditor=editor;
+ });
+
+ editor.addEventListener("mouseup",rememberSelection);
+ editor.addEventListener("keyup",rememberSelection);
+ editor.addEventListener("touchend",rememberSelection);
+
+ editor.addEventListener("input",()=>{
+  activeEditor=editor;
+  rememberSelection();
+
+  requestAnimationFrame(()=>{
+   paginateOverflow(editor);
+   saveAuto();
+  });
+ });
+
+ page.appendChild(editor);
+ pagesEl.appendChild(page);
+
+ renumberPages();
+
+ if(focus){
+  editor.focus();
+  placeCaretAtEnd(editor);
+ }
+
+ return editor;
+}
+
+/* FIXED PAGE CREATION */
+
+function createPageAfter(editor){
+ const currentPage=editor.closest(".paper");
+
+ const page=document.createElement("section");
+ page.className="paper";
+
+ const next=document.createElement("div");
+ next.className="paper-content";
+ next.contentEditable="true";
+ next.spellcheck=true;
+ next.setAttribute("role","textbox");
+ next.setAttribute("aria-multiline","true");
+
+ next.addEventListener("focus",()=>{
+  activeEditor=next;
+ });
+
+ next.addEventListener("mouseup",rememberSelection);
+ next.addEventListener("keyup",rememberSelection);
+ next.addEventListener("touchend",rememberSelection);
+
+ next.addEventListener("input",()=>{
+  activeEditor=next;
+  rememberSelection();
+
+  requestAnimationFrame(()=>{
+   paginateOverflow(next);
+   saveAuto();
+  });
+ });
+
+ page.appendChild(next);
+
+ if(currentPage.nextElementSibling){
+  pagesEl.insertBefore(page,currentPage.nextElementSibling);
+ }else{
+  pagesEl.appendChild(page);
+ }
+
+ renumberPages();
+
+ return next;
+}
+
+/* FIND THE FIRST CHARACTER THAT DOES NOT FIT */
+
+function findOverflowPosition(editor){
+ const editorBox=editor.getBoundingClientRect();
+
+ const walker=document.createTreeWalker(
+  editor,
+  NodeFilter.SHOW_TEXT
+ );
+
+ let node;
+
+ while((node=walker.nextNode())){
+  const text=node.nodeValue||"";
+
+  for(let i=0;i<text.length;i++){
+   const range=document.createRange();
+
+   range.setStart(node,i);
+   range.setEnd(node,i+1);
+
+   const rect=range.getBoundingClientRect();
+
+   if(
+    rect.width>0 &&
+    rect.height>0 &&
+    rect.bottom>editorBox.bottom+1
+   ){
+    return {node:node,offset:i};
+   }
+  }
+ }
+
+ return null;
+}
+
+/* MOVE OVERFLOW TO NEXT SHEET */
+
+function paginateOverflow(startEditor){
+ if(paginationRunning)return;
+ if(!startEditor||!startEditor.isConnected)return;
+
+ paginationRunning=true;
+
+ try{
+  let editor=startEditor;
+  let safety=0;
+
+  while(
+   editor.scrollHeight>editor.clientHeight+1 &&
+   safety<100
+  ){
+   safety++;
+
+   const overflow=findOverflowPosition(editor);
+   let next=getNextEditor(editor);
+
+   if(!next){
+    next=createPageAfter(editor);
+   }
+
+   if(overflow){
+    const range=document.createRange();
+
+    range.setStart(overflow.node,overflow.offset);
+    range.setEnd(editor,editor.childNodes.length);
+
+    const fragment=range.extractContents();
+
+    if(fragment.childNodes.length){
+     next.insertBefore(fragment,next.firstChild);
+    }else{
+     break;
+    }
+
+   }else{
+    /*
+      Fallback for content such as images, tables,
+      empty paragraphs, or non-text elements.
+    */
+
+    const last=editor.lastChild;
+
+    if(!last)break;
+
+    next.insertBefore(last,next.firstChild);
+   }
+
+   if(editor.scrollHeight<=editor.clientHeight+1){
+    break;
+   }
+
+   editor=next;
+  }
+
+  renumberPages();
+
+  /*
+    If content has moved, focus the page receiving
+    the overflow so typing can continue.
+  */
+
+  if(editor!==startEditor){
+   activeEditor=editor;
+  }
+
+ }catch(error){
+  console.error("Pagination error:",error);
+ }finally{
+  paginationRunning=false;
+ }
+}
+
+function getNextEditor(editor){
+ const page=editor.closest(".paper");
+ const nextPage=page.nextElementSibling;
+
+ if(nextPage){
+  return nextPage.querySelector(".paper-content");
+ }
+
+ return createPageAfter(editor);
+}
+
+function renumberPages(){
+ [...pagesEl.children].forEach((page,index)=>{
+  page.dataset.pageLabel="PAGE "+(index+1);
+ });
+
+ const count=pagesEl.children.length;
+
+ document.getElementById("pageCount").textContent=
+  "Pages: "+count;
+
+ statusText.textContent=
+  "Ready | Pages: "+count;
+}
+
+function placeCaretAtEnd(editor){
+ const range=document.createRange();
+
+ range.selectNodeContents(editor);
+ range.collapse(false);
+
+ const sel=window.getSelection();
+
+ sel.removeAllRanges();
+ sel.addRange(range);
+
+ rememberSelection();
+}
+
+function rememberSelection(){
+ const sel=window.getSelection();
+
+ if(!sel||!sel.rangeCount)return;
+
+ const range=sel.getRangeAt(0);
+
+ const editor=
+  range.commonAncestorContainer.nodeType===1
+   ?range.commonAncestorContainer.closest?.(".paper-content")
+   :range.commonAncestorContainer.parentElement?.closest(".paper-content");
+
+ if(editor){
+  activeEditor=editor;
+  savedRange=range.cloneRange();
+ }
+}
+
+function restoreSelection(){
+ const editor=getCurrentEditor();
+
+ if(!editor)return false;
+
+ if(savedRange){
+  const common=savedRange.commonAncestorContainer;
+
+  const owner=
+   common.nodeType===1
+    ?common.closest?.(".paper-content")
+    :common.parentElement?.closest(".paper-content");
+
+  if(owner===editor){
+   const sel=window.getSelection();
+
+   sel.removeAllRanges();
+   sel.addRange(savedRange);
+
+   return true;
+  }
+ }
+
+ editor.focus();
+ placeCaretAtEnd(editor);
+
+ return true;
+}
+
+/* FORMATTING */
+
+function format(command,value=null){
+ const editor=getCurrentEditor();
+
+ if(!editor)return;
+
+ editor.focus();
+ restoreSelection();
+
+ document.execCommand(command,false,value);
+
+ rememberSelection();
+ saveAuto();
+}
+
+function changeFont(font){
+ const editor=getCurrentEditor();
+
+ if(!editor)return;
+
+ editor.focus();
+ restoreSelection();
+
+ document.execCommand("fontName",false,font);
+
+ rememberSelection();
+ saveAuto();
+}
+
+function applySize(){
+ const size=Number(
+  document.getElementById("fontSize").value
+ );
+
+ if(!Number.isFinite(size)||size<1||size>500){
+  alert("Enter a size between 1 and 500 pt.");
+  return;
+ }
+
+ const editor=getCurrentEditor();
+
+ if(!editor||!restoreSelection()){
+  alert("Select text first.");
+  return;
+ }
+
+ const sel=window.getSelection();
+
+ if(!sel.rangeCount||sel.getRangeAt(0).collapsed){
+  alert("Highlight the text you want to resize.");
+  return;
+ }
+
+ const range=sel.getRangeAt(0);
+ const span=document.createElement("span");
+
+ span.style.fontSize=size+"pt";
+
+ try{
+  range.surroundContents(span);
+ }catch(error){
+  const fragment=range.extractContents();
+
+  span.appendChild(fragment);
+  range.insertNode(span);
+ }
+
+ const newRange=document.createRange();
+
+ newRange.selectNodeContents(span);
+
+ sel.removeAllRanges();
+ sel.addRange(newRange);
+
+ rememberSelection();
+ saveAuto();
+}
+
+/* PAGE BUTTONS */
+
+function addPage(){
+ const editor=makePage("",true);
+
+ editor.scrollIntoView({
+  behavior:"smooth",
+  block:"center"
+ });
+
+ saveAuto();
+}
+
+function insertPageBreak(){
+ addPage();
+}
+
+function removeLastPage(){
+ const editors=getEditors();
+
+ if(editors.length<=1){
+  alert("A document must have at least one page.");
+  return;
+ }
+
+ if(!confirm("Delete the last page and all its content?")){
+  return;
+ }
+
+ pagesEl.lastElementChild.remove();
+
+ activeEditor=getEditors().at(-1);
+ savedRange=null;
+
+ renumberPages();
+ saveAuto();
+}
+
+/* PAPER SETTINGS */
+
+function setPaperSize(){
+ const choice=document.getElementById("paperSize").value;
+
+ if(choice==="custom")return;
+
+ const size=paperSizes[choice];
+
+ if(!size)return;
+
+ document.getElementById("paperWidth").value=
+  size[0].toFixed(2);
+
+ document.getElementById("paperHeight").value=
+  size[1].toFixed(2);
+
+ applySettings();
+}
+
+function applySettings(){
+ let width=Number(
+  document.getElementById("paperWidth").value
+ );
+
+ let height=Number(
+  document.getElementById("paperHeight").value
+ );
+
+ const orientation=
+  document.getElementById("orientation").value;
+
+ if(orientation==="landscape"&&height>width){
+  [width,height]=[height,width];
+ }
+
+ if(orientation==="portrait"&&width>height){
+  [width,height]=[height,width];
+ }
+
+ const mt=Number(document.getElementById("marginTop").value);
+ const mb=Number(document.getElementById("marginBottom").value);
+ const ml=Number(document.getElementById("marginLeft").value);
+ const mr=Number(document.getElementById("marginRight").value);
+
+ if(
+  [width,height,mt,mb,ml,mr].some(v=>!Number.isFinite(v))||
+  width<=0||height<=0||width>100||height>100||
+  [mt,mb,ml,mr].some(v=>v<0||v>5)
+ ){
+  alert("Please enter valid paper sizes and margins.");
+  return;
+ }
+
+ document.documentElement.style.setProperty(
+  "--paper-width",width+"in"
+ );
+
+ document.documentElement.style.setProperty(
+  "--paper-height",height+"in"
+ );
+
+ document.documentElement.style.setProperty("--mt",mt+"in");
+ document.documentElement.style.setProperty("--mb",mb+"in");
+ document.documentElement.style.setProperty("--ml",ml+"in");
+ document.documentElement.style.setProperty("--mr",mr+"in");
+
+ getEditors().forEach(editor=>{
+  requestAnimationFrame(()=>{
+   paginateOverflow(editor);
+  });
+ });
+
+ saveAuto();
+ renumberPages();
+}
+
+/* DOCUMENT ACTIONS */
+
+function newDocument(){
+ if(!confirm("Create a new document? This will replace the current document.")){
+  return;
+ }
+
+ pagesEl.innerHTML="";
+
+ savedRange=null;
+ activeEditor=null;
+ documentName="My-Document";
+
+ makePage("",true);
+
+ saveAuto();
+ renumberPages();
+}
+
+function escapeHTML(value){
+ return String(value).replace(/[&<>"']/g,c=>({
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#39;"
+ }[c]));
+}
+
+function createHTML(){
+ const width=getComputedStyle(document.documentElement)
+  .getPropertyValue("--paper-width").trim();
+
+ const height=getComputedStyle(document.documentElement)
+  .getPropertyValue("--paper-height").trim();
+
+ const mt=document.getElementById("marginTop").value+"in";
+ const mb=document.getElementById("marginBottom").value+"in";
+ const ml=document.getElementById("marginLeft").value+"in";
+ const mr=document.getElementById("marginRight").value+"in";
+
+ const pageHTML=getEditors().map(editor=>
+  `<section class="paper"><div class="content">${editor.innerHTML}</div></section>`
+ ).join("\n");
+
+ return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escapeHTML(documentName)}</title>
+<style>
+@page{size:${width} ${height};margin:0}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Times New Roman",serif}
+.paper{
+ width:${width};
+ height:${height};
+ padding:${mt} ${mr} ${mb} ${ml};
+ overflow:hidden;
+ break-after:page;
+ page-break-after:always
+}
+.paper:last-child{
+ break-after:auto;
+ page-break-after:auto
+}
+.content{
+ height:100%;
+ overflow:hidden;
+ overflow-wrap:anywhere;
+ font-size:12pt;
+ line-height:1.5
+}
+@media screen{
+ body{background:#e8edf4;padding:20px}
+ .paper{
+  background:white;
+  margin:0 auto 20px;
+  box-shadow:0 2px 12px #0002
+ }
+}
+</style>
+</head>
+<body>${pageHTML}</body>
+</html>`;
+}
+
+function downloadFile(content,filename,type){
+ const blob=new Blob([content],{type});
+ const url=URL.createObjectURL(blob);
+
+ const a=document.createElement("a");
+
+ a.href=url;
+ a.download=filename;
+
+ document.body.appendChild(a);
+ a.click();
+ a.remove();
+
+ setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+
+function downloadHTML(){
+ downloadFile(
+  createHTML(),
+  documentName+".html",
+  "text/html;charset=utf-8"
+ );
+
+ statusText.textContent="HTML document downloaded";
+}
+
+function downloadPDF(){
+ applySettings();
+ window.print();
+}
+
+/* SHARE: DOCUMENT INSIDE YOUR WEBSITE LINK */
+
+function collectDocumentData(){
+ return {
+  version:1,
+  name:documentName,
+
+  pages:getEditors().map(editor=>editor.innerHTML),
+
+  settings:{
+   width:document.getElementById("paperWidth").value,
+   height:document.getElementById("paperHeight").value,
+   mt:document.getElementById("marginTop").value,
+   mb:document.getElementById("marginBottom").value,
+   ml:document.getElementById("marginLeft").value,
+   mr:document.getElementById("marginRight").value,
+   orientation:document.getElementById("orientation").value
+  }
+ };
+}
+
+function encodeShareData(data){
+ const bytes=new TextEncoder().encode(JSON.stringify(data));
+
+ let binary="";
+
+ bytes.forEach(byte=>{
+  binary+=String.fromCharCode(byte);
+ });
+
+ return btoa(binary)
+  .replace(/\+/g,"-")
+  .replace(/\//g,"_")
+  .replace(/=+$/g,"");
+}
+
+function decodeShareData(encoded){
+ const base64=encoded
+  .replace(/-/g,"+")
+  .replace(/_/g,"/");
+
+ const padded=base64+"=".repeat(
+  (4-base64.length%4)%4
+ );
+
+ const binary=atob(padded);
+
+ const bytes=Uint8Array.from(
+  binary,
+  character=>character.charCodeAt(0)
+ );
+
+ return JSON.parse(
+  new TextDecoder().decode(bytes)
+ );
+}
+
+function loadDocumentData(data){
+ if(!data||!Array.isArray(data.pages)){
+  throw new Error("Invalid shared document");
+ }
+
+ restoring=true;
+ pagesEl.innerHTML="";
+
+ data.pages.forEach(content=>{
+  makePage(String(content??""),false);
+ });
+
+ if(!getEditors().length){
+  makePage("",false);
+ }
+
+ documentName=String(data.name||"Shared-Document")
+  .replace(/[\\/\0]/g,"-")
+  .slice(0,100);
+
+ const settings=data.settings||{};
+
+ const fields=[
+  ["paperWidth","width"],
+  ["paperHeight","height"],
+  ["marginTop","mt"],
+  ["marginBottom","mb"],
+  ["marginLeft","ml"],
+  ["marginRight","mr"]
+ ];
+
+ fields.forEach(([id,key])=>{
+  if(settings[key]!=null){
+   document.getElementById(id).value=settings[key];
+  }
+ });
+
+ if(settings.orientation){
+  document.getElementById("orientation").value=
+   settings.orientation;
+ }
+
+ restoring=false;
+
+ applySettings();
+
+ activeEditor=getEditors()[0];
+ savedRange=null;
+
+ renumberPages();
+ saveAuto();
+
+ getEditors().forEach(editor=>{
+  requestAnimationFrame(()=>{
+   paginateOverflow(editor);
+  });
+ });
+}
+
+async function shareDocument(){
+ try{
+  const data=collectDocumentData();
+
+  const encoded=encodeShareData(data);
+
+  const baseURL=
+   location.origin+
+   location.pathname+
+   location.search;
+
+  const shareURL=
+   baseURL+"#sharedDoc="+encoded;
+
+  if(location.protocol!=="https:"&&location.protocol!=="http:"){
+   alert("Please publish your website on GitHub Pages before sharing.");
+   return;
+  }
+
+  if(shareURL.length>60000){
+   alert(
+    "Your document is too large for a share link. Try sharing a shorter document."
+   );
+   return;
+  }
+
+  if(navigator.share){
+   await navigator.share({
+    title:documentName,
+    text:"Open my document on this website:",
+    url:shareURL
+   });
+
+  }else if(navigator.clipboard&&navigator.clipboard.writeText){
+   await navigator.clipboard.writeText(shareURL);
+
+   alert(
+    "Website document link copied! Send it to anyone."
+   );
+
+  }else{
+   window.prompt(
+    "Copy this website link:",
+    shareURL
+   );
+  }
+
+ }catch(error){
+  if(error.name!=="AbortError"){
+   console.error(error);
+   alert("Unable to share. Please try again.");
+  }
+ }
+}
+
+/* OPEN FILE */
+
+function openDocument(event){
+ const file=event.target.files?.[0];
+
+ if(!file)return;
+
+ const reader=new FileReader();
+
+ reader.onload=()=>{
+  pagesEl.innerHTML="";
+
+  if(file.name.toLowerCase().endsWith(".txt")){
+   const lines=String(reader.result).split(/\f/);
+
+   lines.forEach(text=>{
+    const editor=makePage("",false);
+    editor.textContent=text;
+   });
+
+  }else{
+   const doc=new DOMParser().parseFromString(
+    String(reader.result),
+    "text/html"
+   );
+
+   const sections=[...doc.querySelectorAll(".paper")];
+
+   if(sections.length){
+    sections.forEach(section=>{
+     const content=section.querySelector(
+      ".content,.paper-content"
+     );
+
+     makePage(
+      content?content.innerHTML:section.innerHTML,
+      false
+     );
+    });
+
+   }else{
+    const source=doc.querySelector("#pages");
+
+    const oldEditors=source
+     ?[...source.querySelectorAll(".paper-content")]
+     :[];
+
+    if(oldEditors.length){
+     oldEditors.forEach(editor=>{
+      makePage(editor.innerHTML,false);
+     });
+    }else{
+     makePage(doc.body.innerHTML,false);
+    }
+   }
+  }
+
+  if(!getEditors().length){
+   makePage("",false);
+  }
+
+  documentName=file.name.replace(/\.[^/.]+$/,"");
+
+  activeEditor=getEditors()[0];
+  savedRange=null;
+
+  renumberPages();
+  saveAuto();
+
+  statusText.textContent="Opened: "+file.name;
+
+  event.target.value="";
+
+  getEditors().forEach(editor=>{
+   requestAnimationFrame(()=>{
+    paginateOverflow(editor);
+   });
+  });
+ };
+
+ reader.onerror=()=>{
+  alert("Could not open this file.");
+ };
+
+ reader.readAsText(file);
+}
+
+/* AUTOSAVE */
+
+function saveAuto(){
+ if(restoring)return;
+
+ clearTimeout(saveTimer);
+
+ saveTimer=setTimeout(()=>{
+  try{
+   const data={
+    name:documentName,
+
+    pages:getEditors().map(editor=>editor.innerHTML),
+
+    settings:{
+     width:document.getElementById("paperWidth").value,
+     height:document.getElementById("paperHeight").value,
+     mt:document.getElementById("marginTop").value,
+     mb:document.getElementById("marginBottom").value,
+     ml:document.getElementById("marginLeft").value,
+     mr:document.getElementById("marginRight").value,
+     orientation:document.getElementById("orientation").value
+    }
+   };
+
+   localStorage.setItem(
+    "wordEditorPro",
+    JSON.stringify(data)
+   );
+
+   statusText.textContent=
+    "Changes automatically saved | Pages: "+getEditors().length;
+
+  }catch(error){
+   statusText.textContent="Browser storage unavailable";
+  }
+
+  renumberPages();
+
+ },400);
+}
+
+function restoreSaved(){
+ try{
+  const raw=localStorage.getItem("wordEditorPro");
+
+  if(!raw)return false;
+
+  const data=JSON.parse(raw);
+
+  if(!data||!Array.isArray(data.pages)){
+   return false;
+  }
+
+  restoring=true;
+  pagesEl.innerHTML="";
+
+  data.pages.forEach(content=>{
+   makePage(content,false);
+  });
+
+  if(!getEditors().length){
+   makePage("",false);
+  }
+
+  if(data.name){
+   documentName=data.name;
+  }
+
+  if(data.settings){
+   const settings=data.settings;
+
+   const fields=[
+    ["paperWidth","width"],
+    ["paperHeight","height"],
+    ["marginTop","mt"],
+    ["marginBottom","mb"],
+    ["marginLeft","ml"],
+    ["marginRight","mr"]
+   ];
+
+   fields.forEach(([id,key])=>{
+    if(settings[key]!=null){
+     document.getElementById(id).value=settings[key];
+    }
+   });
+
+   if(settings.orientation){
+    document.getElementById("orientation").value=
+     settings.orientation;
+   }
+  }
+
+  restoring=false;
+
+  applySettings();
+
+  activeEditor=getEditors()[0];
+
+  return true;
+
+ }catch(error){
+  restoring=false;
+  return false;
+ }
+}
+
+/* TRACK SELECTION */
+
+document.addEventListener("selectionchange",()=>{
+ const sel=window.getSelection();
+
+ if(!sel||!sel.rangeCount)return;
+
+ const node=sel.getRangeAt(0).commonAncestorContainer;
+
+ const owner=
+  node.nodeType===1
+   ?node.closest?.(".paper-content")
+   :node.parentElement?.closest(".paper-content");
+
+ if(owner&&owner.isConnected){
+  activeEditor=owner;
+  savedRange=sel.getRangeAt(0).cloneRange();
+ }
+});
+
+window.addEventListener("beforeunload",()=>{
+ if(saveTimer){
+  clearTimeout(saveTimer);
+ }
+});
+
+/* LOAD WEBSITE */
+
+window.addEventListener("load",()=>{
+ const sharedMatch=
+  location.hash.match(/^#sharedDoc=(.+)$/);
+
+ if(sharedMatch){
+  try{
+   const sharedData=decodeShareData(sharedMatch[1]);
+
+   loadDocumentData(sharedData);
+
+   statusText.textContent=
+    "Shared document loaded | You can edit this copy";
+
+  }catch(error){
+   console.error(error);
+
+   alert("This shared document link is invalid or incomplete.");
+
+   if(!restoreSaved()){
+    makePage("",false);
+    applySettings();
+   }
+  }
+
+ }else if(!restoreSaved()){
+  makePage("",false);
+  applySettings();
+ }
+
+ renumberPages();
+});
+</script>
+
+</body>
+</html>
