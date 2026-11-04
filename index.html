@@ -1,285 +1,240 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Word Editor PRO</title>
+
+<!-- DOCX generator -->
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+
 <style>
-*{box-sizing:border-box}
-:root{--paper-width:8.5in;--paper-height:11in;--mt:1in;--mr:1in;--mb:1in;--ml:1in}
-
-html,body{
- width:100%;
- height:100%;
- margin:0;
- overflow:hidden;
+:root {
+    --paper-width: 8.27in;
+    --paper-height: 11.69in;
+    --paper-margin: 0.8in;
 }
 
-body{
- background:#e8edf4;
- color:#222;
- font-family:Arial,sans-serif;
- display:flex;
- flex-direction:column;
- min-height:0;
+* {
+    box-sizing: border-box;
 }
 
-header{
- background:#185abd;
- color:#fff;
- padding:12px 14px;
- display:flex;
- align-items:center;
- justify-content:space-between;
- gap:10px;
- flex-wrap:wrap;
- flex-shrink:0;
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #e7e7e7;
+    color: #222;
 }
 
-header h2{font-size:19px;margin:0}
-
-.actions,.toolbar,.settings,.page-tools{
- display:flex;
- align-items:center;
- gap:7px;
- flex-wrap:wrap;
+header {
+    background: #185c38;
+    color: white;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-button,select,input{font:inherit}
-
-button{
- padding:8px 10px;
- border:1px solid #c8ced8;
- background:#fff;
- border-radius:5px;
- cursor:pointer;
+header h2 {
+    margin: 0;
+    font-size: 19px;
 }
 
-button:active{background:#dce8fa}
-.actions button{color:#185abd;font-weight:bold}
-
-.toolbar{
- position:relative;
- z-index:20;
- background:#fff;
- padding:10px;
- border-bottom:1px solid #ccc;
- flex-shrink:0;
+.header-buttons,
+.toolbar,
+.settings {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
 }
 
-.toolbar select,.toolbar input{
- min-height:34px;
- padding:6px;
- border:1px solid #ccc;
- border-radius:4px;
+button, select, input {
+    font: inherit;
 }
 
-.toolbar input[type=number]{width:76px}
-.toolbar input[type=color]{width:40px;padding:2px}
-
-.toolbar label,.settings label{
- display:flex;
- align-items:center;
- gap:5px;
- font-size:12px;
+button {
+    padding: 8px 11px;
+    border: 1px solid #ccc;
+    background: white;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
-.settings{
- background:#fff;
- padding:12px;
- border-bottom:1px solid #ddd;
- flex-shrink:0;
+button:active {
+    background: #dceee3;
 }
 
-.settings input,.settings select{
- width:76px;
- padding:6px;
- border:1px solid #ccc;
- border-radius:4px;
+.primary {
+    background: #16834a;
+    color: white;
+    border: none;
 }
 
-.settings select{width:auto}
-
-.page-tools{
- background:#f8faff;
- padding:10px;
- border-bottom:1px solid #ddd;
- flex-shrink:0;
+.toolbar {
+    background: #fafafa;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
 }
 
-.page-tools button{
- border-color:#185abd;
- color:#185abd;
- font-weight:bold;
+.toolbar select {
+    padding: 7px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    max-width: 100%;
 }
 
-/* Main scrolling area: swipe anywhere in this area */
-.workspace{
- padding:25px 10px 50px;
- flex:1 1 auto;
- min-height:0;
- min-width:0;
- width:100%;
- overflow:auto;
- overscroll-behavior:contain;
- -webkit-overflow-scrolling:touch;
- touch-action:pan-x pan-y;
- position:relative;
+.toolbar button {
+    min-width: 35px;
 }
 
-/* Pages stay at their real paper dimensions */
-#pages{
- display:flex;
- flex-direction:column;
- align-items:center;
- gap:25px;
- width:max-content;
- min-width:100%;
- padding:0 10px 20px;
+.settings {
+    background: #eee;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
 }
 
-.paper{
- position:relative;
- width:var(--paper-width)!important;
- height:var(--paper-height)!important;
- min-width:var(--paper-width);
- min-height:var(--paper-height);
- max-width:none;
- max-height:none;
- background:#fff;
- box-shadow:0 2px 12px #0002;
- flex:none;
- flex-shrink:0;
- overflow:hidden;
- transform:none;
- touch-action:pan-y;
+.settings label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
 }
 
-.paper:before{
- content:attr(data-page-label);
- position:absolute;
- top:5px;
- right:10px;
- color:#b7b7b7;
- font:10px Arial;
- pointer-events:none;
+.settings input,
+.settings select {
+    padding: 7px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
 }
 
-.paper-content{
- position:absolute;
- inset:var(--mt) var(--mr) var(--mb) var(--ml);
- outline:none;
- overflow:hidden;
- min-height:0;
- overflow-wrap:anywhere;
- font-family:"Times New Roman",serif;
- font-size:12pt;
- line-height:1.5;
- white-space:normal;
- touch-action:pan-x pan-y;
+.settings input {
+    width: 65px;
 }
 
-.paper-content:empty:after{
- content:"Start writing your document here...";
- color:#aaa;
- pointer-events:none;
+input[type="color"] {
+    width: 36px;
+    height: 32px;
+    padding: 2px;
 }
 
-.paper-content p{margin-top:0}
-.paper-content:focus{outline:none}
-.paper-content ul,.paper-content ol{padding-left:30px}
-
-.status{
- position:relative;
- flex-shrink:0;
- background:#fff;
- padding:10px;
- border-top:1px solid #ddd;
- text-align:center;
- font-size:12px;
- color:#666;
- z-index:5;
+.workspace {
+    height: calc(100vh - 195px);
+    min-height: 350px;
+    overflow: auto;
+    padding: 25px 15px 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
 }
 
-@media(max-width:600px){
- header h2{font-size:16px}
-
- .workspace{
-  padding:14px 5px 45px;
-  flex:1 1 auto;
-  min-height:0;
-  overflow-x:auto;
-  overflow-y:auto;
-  touch-action:pan-x pan-y;
-  -webkit-overflow-scrolling:touch;
- }
-
- .paper{
-  width:var(--paper-width)!important;
-  height:var(--paper-height)!important;
-  min-width:var(--paper-width)!important;
-  min-height:var(--paper-height)!important;
-  max-width:none!important;
-  flex-shrink:0;
- }
-
- .paper-content{
-  inset:var(--mt) var(--mr) var(--mb) var(--ml);
- }
-
- #pages{
-  width:max-content;
-  min-width:100%;
-  align-items:center;
-  padding:0 10px 20px;
- }
+#pages {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
 }
 
-@media print{
- @page{size:var(--paper-width) var(--paper-height);margin:0}
+.paper {
+    background: white;
+    width: var(--paper-width);
+    height: var(--paper-height);
+    min-width: var(--paper-width);
+    flex: none;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 12px #0002;
+}
 
- html,body{
-  height:auto;
-  overflow:visible;
- }
+.page-content {
+    width: 100%;
+    height: 100%;
+    padding: var(--paper-margin);
+    outline: none;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    font-family: Arial, sans-serif;
+    font-size: 12pt;
+    line-height: 1.35;
+}
 
- body{
-  background:#fff;
-  display:block;
- }
+.page-content:focus {
+    outline: none;
+}
 
- header,.toolbar,.settings,.page-tools,.status{
-  display:none!important;
- }
+.page-content p {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
 
- .workspace{
-  padding:0;
-  overflow:visible;
- }
+.page-number {
+    position: absolute;
+    bottom: 10px;
+    right: 22px;
+    color: #999;
+    font-size: 11px;
+    pointer-events: none;
+}
 
- #pages{
-  display:block;
-  min-width:0;
-  width:auto;
- }
+.status {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 8px 12px;
+    background: #185c38;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+    z-index: 10;
+}
 
- .paper{
-  width:var(--paper-width)!important;
-  height:var(--paper-height)!important;
-  box-shadow:none;
-  margin:0;
-  overflow:hidden;
-  break-after:page;
-  page-break-after:always;
- }
+@media print {
+    @page {
+        size: auto;
+        margin: 0;
+    }
 
- .paper:last-child{
-  break-after:auto;
-  page-break-after:auto;
- }
+    body {
+        background: white;
+    }
 
- .paper-content{overflow:visible}
- .paper:before{display:none}
+    header,
+    .toolbar,
+    .settings,
+    .status {
+        display: none !important;
+    }
+
+    .workspace {
+        display: block;
+        height: auto;
+        overflow: visible;
+        padding: 0;
+    }
+
+    #pages {
+        display: block;
+    }
+
+    .paper {
+        margin: 0;
+        box-shadow: none;
+        page-break-after: always;
+        break-after: page;
+    }
+
+    .page-content {
+        overflow: visible;
+    }
 }
 </style>
 </head>
@@ -287,987 +242,1181 @@ button:active{background:#dce8fa}
 <body>
 
 <header>
- <h2>📄 Word BETA by andro</h2>
- <div class="actions">
-  <button onclick="downloadHTML()">💾 Download HTML</button>
-  <button onclick="downloadPDF()">📕 PDF / Print</button>
-  <button onclick="shareDocument()">📤 Share</button>
- </div>
+    <h2>📝 Word BETA by andro</h2>
+
+    <div class="header-buttons">
+        <button onclick="downloadHTML()">HTML</button>
+        <button onclick="downloadDOCX()">Word DOCX</button>
+        <button onclick="downloadPDF()">PDF</button>
+        <button class="primary" onclick="shareDocument()">Share</button>
+    </div>
 </header>
 
+<!-- TEXT TOOLBAR -->
 <div class="toolbar">
- <button onclick="newDocument()">📄 New</button>
- <button onclick="document.getElementById('fileInput').click()">📂 Open</button>
 
- <input id="fileInput" type="file" accept=".html,.htm,.txt" hidden onchange="openDocument(event)">
+    <select id="fontFamily" onchange="format('fontName', this.value)">
+        <option value="Arial">Arial</option>
+        <option value="Calibri">Calibri</option>
+        <option value="Cambria">Cambria</option>
+        <option value="Times New Roman">Times New Roman</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Verdana">Verdana</option>
+        <option value="Tahoma">Tahoma</option>
+        <option value="Trebuchet MS">Trebuchet MS</option>
+        <option value="Comic Sans MS">Comic Sans MS</option>
+        <option value="Courier New">Courier New</option>
+        <option value="Garamond">Garamond</option>
+        <option value="Consolas">Consolas</option>
+    </select>
 
- <select id="fontFamily" aria-label="Font family" onchange="changeFont(this.value)">
-  <option>Arial</option>
-  <option>Arial Black</option>
-  <option>Calibri</option>
-  <option>Cambria</option>
-  <option>Candara</option>
-  <option>Comic Sans MS</option>
-  <option>Consolas</option>
-  <option>Courier New</option>
-  <option>Georgia</option>
-  <option>Garamond</option>
-  <option>Impact</option>
-  <option>Lucida Console</option>
-  <option>Palatino Linotype</option>
-  <option>Tahoma</option>
-  <option selected>Times New Roman</option>
-  <option>Trebuchet MS</option>
-  <option>Verdana</option>
-  <option>Bookman Old Style</option>
-  <option>Century Gothic</option>
-  <option>Segoe UI</option>
-  <option>Roboto</option>
-  <option>serif</option>
-  <option>sans-serif</option>
-  <option>monospace</option>
- </select>
+    <select id="fontSize" onchange="setFontSize(this.value)">
+        <option value="1">8 pt</option>
+        <option value="2">10 pt</option>
+        <option value="3" selected>12 pt</option>
+        <option value="4">14 pt</option>
+        <option value="5">18 pt</option>
+        <option value="6">24 pt</option>
+        <option value="7">36 pt</option>
+    </select>
 
- <input type="number" id="fontSize" value="12" min="1" max="500" step=".5" aria-label="Font size in points">
- <button onclick="applySize()">Apply Size</button>
+    <button onclick="format('bold')"><b>B</b></button>
+    <button onclick="format('italic')"><i>I</i></button>
+    <button onclick="format('underline')"><u>U</u></button>
+    <button onclick="format('strikeThrough')"><s>S</s></button>
 
- <button onclick="format('bold')"><b>B</b></button>
- <button onclick="format('italic')"><i>I</i></button>
- <button onclick="format('underline')"><u>U</u></button>
- <button onclick="format('strikeThrough')"><s>S</s></button>
+    <button onclick="format('justifyLeft')">Left</button>
+    <button onclick="format('justifyCenter')">Center</button>
+    <button onclick="format('justifyRight')">Right</button>
+    <button onclick="format('justifyFull')">Justify</button>
 
- <button onclick="format('justifyLeft')">⬅</button>
- <button onclick="format('justifyCenter')">Center</button>
- <button onclick="format('justifyRight')">➡</button>
- <button onclick="format('justifyFull')">Justify</button>
+    <button onclick="format('insertUnorderedList')">• List</button>
+    <button onclick="format('insertOrderedList')">1. List</button>
+    <button onclick="format('indent')">Indent</button>
+    <button onclick="format('outdent')">Outdent</button>
 
- <button onclick="format('insertUnorderedList')">• List</button>
- <button onclick="format('insertOrderedList')">1. List</button>
- <button onclick="format('indent')">↦</button>
- <button onclick="format('outdent')">↤</button>
+    <label>
+        Text
+        <input type="color" onchange="format('foreColor', this.value)">
+    </label>
 
- <label>Text <input type="color" value="#000000" onchange="format('foreColor',this.value)"></label>
- <label>Highlight <input type="color" value="#ffff00" onchange="format('hiliteColor',this.value)"></label>
+    <label>
+        Highlight
+        <input type="color" value="#ffff00"
+        onchange="format('hiliteColor', this.value)">
+    </label>
 
- <button onclick="format('undo')">↶ Undo</button>
- <button onclick="format('redo')">↷ Redo</button>
- <button onclick="format('removeFormat')">Clear Format</button>
+    <button onclick="format('undo')">↶</button>
+    <button onclick="format('redo')">↷</button>
+    <button onclick="format('removeFormat')">Clear Format</button>
+
 </div>
 
+<!-- PAPER SETTINGS -->
 <div class="settings">
- <label>Paper:
-  <select id="paperSize" onchange="setPaperSize()">
-   <option value="short">Short Bond</option>
-   <option value="long">Long Bond</option>
-   <option value="a4" selected>A4</option>
-   <option value="a3">A3</option>
-   <option value="a5">A5</option>
-   <option value="letter">Letter</option>
-   <option value="legal">Legal</option>
-   <option value="custom">Custom</option>
-  </select>
- </label>
 
- <label>Width:
-  <input type="number" id="paperWidth" value="8.27" min="1" max="100" step=".01">
- </label>
+    <label>
+        Paper
+        <select id="paperSize" onchange="changePaper()">
+            <option value="a4">A4</option>
+            <option value="short">Short Bond Paper</option>
+            <option value="long">Long Bond Paper</option>
+            <option value="a3">A3</option>
+            <option value="a5">A5</option>
+            <option value="letter">Letter</option>
+            <option value="legal">Legal</option>
+            <option value="custom">Custom</option>
+        </select>
+    </label>
 
- <label>Height:
-  <input type="number" id="paperHeight" value="11.69" min="1" max="100" step=".01">
- </label>
+    <label>
+        Width
+        <input id="customWidth" type="number" step="0.1" value="8.27">
+    </label>
 
- <label>Top:
-  <input type="number" id="marginTop" value="1" min="0" max="5" step=".1">
- </label>
+    <label>
+        Height
+        <input id="customHeight" type="number" step="0.1" value="11.69">
+    </label>
 
- <label>Bottom:
-  <input type="number" id="marginBottom" value="1" min="0" max="5" step=".1">
- </label>
+    <label>
+        Margin
+        <input id="margin" type="number" step="0.1" value="0.8">
+    </label>
 
- <label>Left:
-  <input type="number" id="marginLeft" value="1" min="0" max="5" step=".1">
- </label>
+    <label>
+        Orientation
+        <select id="orientation" onchange="changePaper()">
+            <option value="portrait">Portrait</option>
+            <option value="landscape">Landscape</option>
+        </select>
+    </label>
 
- <label>Right:
-  <input type="number" id="marginRight" value="1" min="0" max="5" step=".1">
- </label>
+    <button onclick="applyPaper()">Apply Size</button>
 
- <label>Orientation:
-  <select id="orientation" onchange="applySettings()">
-   <option value="portrait">Portrait</option>
-   <option value="landscape">Landscape</option>
-  </select>
- </label>
-
- <button onclick="applySettings()">Apply</button>
 </div>
 
-<div class="page-tools">
- <button onclick="addPage()">＋ Add Page</button>
- <button onclick="removeLastPage()">－ Remove Last Page</button>
- <button onclick="insertPageBreak()">↵ Add Page & Continue</button>
- <span id="pageCount">Pages: 1</span>
+<!-- PAGE CONTROLS -->
+<div class="toolbar">
+
+    <button class="primary" onclick="addPage()">+ Add Page</button>
+    <button onclick="insertPageBreak()">Page Break</button>
+    <button onclick="removeLastPage()">Remove Last Page</button>
+
+    <button onclick="document.getElementById('fileInput').click()">
+        Open File
+    </button>
+
+    <input
+        id="fileInput"
+        type="file"
+        accept=".html,.htm,.txt"
+        hidden
+        onchange="openFile(event)"
+    >
+
 </div>
 
-<div class="workspace" id="workspace">
- <div id="pages"></div>
+<!-- EDITOR -->
+<div class="workspace">
+    <div id="pages"></div>
 </div>
 
-<div class="status" id="status">Ready | Pages: 1</div>
+<div class="status">
+    <span id="pageStatus">Pages: 1</span>
+    <span id="wordStatus">Words: 0</span>
+    <span id="saveStatus">Ready</span>
+</div>
 
 <script>
-const pagesEl=document.getElementById("pages");
-const statusText=document.getElementById("status");
 
-let documentName="My-Document";
-let savedRange=null;
-let activeEditor=null;
-let saveTimer=null;
-let restoring=false;
+/* =========================
+   GLOBAL SETTINGS
+========================= */
 
-const paperSizes={
- short:[8.5,11],
- long:[8.5,13],
- a4:[210/25.4,297/25.4],
- a3:[297/25.4,420/25.4],
- a5:[148/25.4,210/25.4],
- letter:[8.5,11],
- legal:[8.5,14]
+const pagesContainer = document.getElementById("pages");
+
+let documentName = "My Document";
+
+let pageWidth = 8.27;
+let pageHeight = 11.69;
+let pageMargin = 0.8;
+
+let savedRange = null;
+let isPaginating = false;
+let paginationTimer = null;
+
+const paperSizes = {
+    a4: [8.27, 11.69],
+    short: [8.5, 11],
+    long: [8.5, 13],
+    a3: [11.69, 16.54],
+    a5: [5.83, 8.27],
+    letter: [8.5, 11],
+    legal: [8.5, 14]
 };
 
-function getEditors(){
- return [...document.querySelectorAll(".paper-content")];
+
+/* =========================
+   PAGE MANAGEMENT
+========================= */
+
+function getEditors() {
+    return [...document.querySelectorAll(".page-content")];
 }
 
-function getCurrentEditor(){
- if(activeEditor&&activeEditor.isConnected)return activeEditor;
- const editors=getEditors();
- return editors[editors.length-1]||null;
-}
+function getActiveEditor() {
+    const selection = window.getSelection();
 
-function setActive(editor){
- activeEditor=editor;
-}
+    if (selection && selection.rangeCount) {
+        let node = selection.anchorNode;
 
-function makePage(content="",focus=true){
- const page=document.createElement("section");
- page.className="paper";
+        while (node && node !== document.body) {
+            if (
+                node.nodeType === 1 &&
+                node.classList.contains("page-content")
+            ) {
+                return node;
+            }
 
- const editor=document.createElement("div");
- editor.className="paper-content";
- editor.contentEditable="true";
- editor.spellcheck=true;
- editor.setAttribute("role","textbox");
- editor.setAttribute("aria-multiline","true");
- editor.innerHTML=content;
-
- editor.addEventListener("focus",()=>setActive(editor));
- editor.addEventListener("mouseup",rememberSelection);
- editor.addEventListener("keyup",rememberSelection);
- editor.addEventListener("touchend",rememberSelection);
-
- editor.addEventListener("input",()=>{
-  setActive(editor);
-  rememberSelection();
-  paginateOverflow(editor);
-  saveAuto();
- });
-
- page.appendChild(editor);
- pagesEl.appendChild(page);
-
- renumberPages();
-
- if(focus){
-  editor.focus();
-  placeCaretAtEnd(editor);
- }
-
- return editor;
-}
-
-function getNextEditor(editor){
- const pages=[...pagesEl.children];
- const index=pages.indexOf(editor.closest(".paper"));
-
- if(index<0)return null;
-
- const nextPage=pages[index+1];
-
- if(nextPage){
-  return nextPage.querySelector(".paper-content");
- }
-
- const next=makePage("",false);
- const newPage=next.closest(".paper");
- const currentPage=editor.closest(".paper");
-
- currentPage.after(newPage);
- renumberPages();
-
- return next;
-}
-
-function findFirstOverflowRange(editor){
- const box=editor.getBoundingClientRect();
- const walker=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT);
-
- let node;
-
- while((node=walker.nextNode())){
-  const text=node.nodeValue||"";
-  const words=/\S+\s*/g;
-  let match;
-
-  while((match=words.exec(text))){
-   const range=document.createRange();
-
-   range.setStart(node,match.index);
-   range.setEnd(node,match.index+match[0].length);
-
-   const rects=range.getClientRects();
-
-   for(const rect of rects){
-    if(rect.bottom>box.bottom+1){
-     const result=document.createRange();
-     result.setStart(node,match.index);
-     result.setEnd(editor,editor.childNodes.length);
-     return result;
+            node = node.parentNode;
+        }
     }
-   }
-  }
- }
 
- return null;
+    const editors = getEditors();
+    return editors[editors.length - 1];
 }
 
-function paginateOverflow(editor){
- if(!editor||!editor.isConnected)return;
+function makePage(html = "") {
 
- let safety=0;
+    const paper = document.createElement("div");
+    paper.className = "paper";
 
- while(editor.scrollHeight>editor.clientHeight+1&&safety++<100){
-  const range=findFirstOverflowRange(editor);
-  const next=getNextEditor(editor);
+    const editor = document.createElement("div");
+    editor.className = "page-content";
+    editor.contentEditable = "true";
+    editor.spellcheck = true;
+    editor.innerHTML = html;
 
-  if(!next)return;
+    const number = document.createElement("div");
+    number.className = "page-number";
 
-  if(range&&!range.collapsed){
-   const fragment=range.extractContents();
-   next.insertBefore(fragment,next.firstChild);
-  }else if(editor.lastChild){
-   next.insertBefore(editor.lastChild,next.firstChild);
-  }else{
-   break;
-  }
+    editor.addEventListener("keyup", saveSelection);
+    editor.addEventListener("mouseup", saveSelection);
+    editor.addEventListener("touchend", saveSelection);
 
-  if(!next.firstChild)break;
+    editor.addEventListener("input", function() {
 
-  if(next.scrollHeight>next.clientHeight+1){
-   editor=next;
-  }else{
-   const sel=window.getSelection();
-   const caret=document.createRange();
+        saveSelection();
 
-   caret.setStart(next,0);
-   caret.collapse(true);
+        clearTimeout(paginationTimer);
 
-   sel.removeAllRanges();
-   sel.addRange(caret);
+        paginationTimer = setTimeout(function() {
+            paginateAll();
+            updateStatus();
+            saveDocument();
+        }, 200);
 
-   activeEditor=next;
-   savedRange=caret.cloneRange();
-   break;
-  }
- }
+    });
 
- renumberPages();
+    paper.appendChild(editor);
+    paper.appendChild(number);
+
+    pagesContainer.appendChild(paper);
+
+    updatePaperStyle();
+    renumberPages();
+
+    return editor;
 }
 
-function renumberPages(){
- [...pagesEl.children].forEach((page,i)=>{
-  page.dataset.pageLabel="PAGE "+(i+1);
- });
+function addPage() {
+    const editor = makePage();
+    editor.focus();
 
- const count=pagesEl.children.length;
-
- document.getElementById("pageCount").textContent="Pages: "+count;
- statusText.textContent="Ready | Pages: "+count;
+    updateStatus();
+    saveDocument();
 }
 
-function placeCaretAtEnd(el){
- const range=document.createRange();
- range.selectNodeContents(el);
- range.collapse(false);
+function insertPageBreak() {
 
- const sel=window.getSelection();
- sel.removeAllRanges();
- sel.addRange(range);
+    const editor = getActiveEditor();
 
- rememberSelection();
+    if (!editor) return;
+
+    const next = makePage();
+
+    next.focus();
+
+    updateStatus();
+    saveDocument();
 }
 
-function rememberSelection(){
- const sel=window.getSelection();
+function removeLastPage() {
 
- if(!sel||!sel.rangeCount)return;
+    const editors = getEditors();
 
- const range=sel.getRangeAt(0);
+    if (editors.length <= 1) {
+        alert("You must keep at least one page.");
+        return;
+    }
 
- const editor=range.commonAncestorContainer.nodeType===1
-  ?range.commonAncestorContainer.closest?.(".paper-content")
-  :range.commonAncestorContainer.parentElement?.closest(".paper-content");
+    pagesContainer.lastElementChild.remove();
 
- if(editor){
-  activeEditor=editor;
-  savedRange=range.cloneRange();
- }
+    renumberPages();
+    updateStatus();
+    saveDocument();
 }
 
-function restoreSelection(){
- const editor=getCurrentEditor();
+function renumberPages() {
 
- if(!editor)return false;
+    document.querySelectorAll(".page-number").forEach(
+        (element, index) => {
+            element.textContent = index + 1;
+        }
+    );
 
- if(savedRange){
-  const common=savedRange.commonAncestorContainer;
-
-  const owner=common.nodeType===1
-   ?common.closest?.(".paper-content")
-   :common.parentElement?.closest(".paper-content");
-
-  if(owner===editor){
-   const sel=window.getSelection();
-   sel.removeAllRanges();
-   sel.addRange(savedRange);
-   return true;
-  }
- }
-
- editor.focus();
- placeCaretAtEnd(editor);
- return true;
 }
 
-function format(command,value=null){
- const editor=getCurrentEditor();
 
- if(!editor)return;
+/* =========================
+   TEXT FORMATTING
+========================= */
 
- editor.focus();
- restoreSelection();
+function saveSelection() {
 
- document.execCommand(command,false,value);
+    const selection = window.getSelection();
 
- rememberSelection();
- saveAuto();
+    if (selection && selection.rangeCount) {
+        savedRange = selection.getRangeAt(0).cloneRange();
+    }
+
 }
 
-function changeFont(font){
- const editor=getCurrentEditor();
+function restoreSelection() {
 
- if(!editor)return;
+    if (!savedRange) return;
 
- editor.focus();
- restoreSelection();
+    const selection = window.getSelection();
 
- document.execCommand("fontName",false,font);
+    try {
+        selection.removeAllRanges();
+        selection.addRange(savedRange);
+    } catch (error) {}
 
- rememberSelection();
- saveAuto();
 }
 
-function applySize(){
- const size=Number(document.getElementById("fontSize").value);
+function format(command, value = null) {
 
- if(!Number.isFinite(size)||size<1||size>500){
-  alert("Enter a size between 1 and 500 pt.");
-  return;
- }
+    restoreSelection();
 
- const editor=getCurrentEditor();
+    document.execCommand(command, false, value);
 
- if(!editor||!restoreSelection()){
-  alert("Select text first.");
-  return;
- }
+    saveSelection();
+    updateStatus();
+    saveDocument();
 
- const sel=window.getSelection();
-
- if(!sel.rangeCount||sel.getRangeAt(0).collapsed){
-  alert("Highlight the text you want to resize.");
-  return;
- }
-
- const range=sel.getRangeAt(0);
- const span=document.createElement("span");
-
- span.style.fontSize=size+"pt";
-
- try{
-  range.surroundContents(span);
- }catch(e){
-  const fragment=range.extractContents();
-  span.appendChild(fragment);
-  range.insertNode(span);
- }
-
- const newRange=document.createRange();
- newRange.selectNodeContents(span);
-
- sel.removeAllRanges();
- sel.addRange(newRange);
-
- rememberSelection();
- saveAuto();
 }
 
-function addPage(){
- const editor=makePage("",true);
+function setFontSize(size) {
 
- editor.scrollIntoView({
-  behavior:"smooth",
-  block:"center"
- });
+    restoreSelection();
 
- saveAuto();
+    document.execCommand("fontSize", false, size);
+
+    saveSelection();
+    saveDocument();
+
 }
 
-function insertPageBreak(){
- addPage();
+
+/* =========================
+   PAPER SETTINGS
+========================= */
+
+function updatePaperStyle() {
+
+    document.documentElement.style.setProperty(
+        "--paper-width",
+        pageWidth + "in"
+    );
+
+    document.documentElement.style.setProperty(
+        "--paper-height",
+        pageHeight + "in"
+    );
+
+    document.documentElement.style.setProperty(
+        "--paper-margin",
+        pageMargin + "in"
+    );
+
 }
 
-function removeLastPage(){
- const editors=getEditors();
+function changePaper() {
 
- if(editors.length<=1){
-  alert("A document must have at least one page.");
-  return;
- }
+    const selected = document.getElementById("paperSize").value;
 
- if(!confirm("Delete the last page and all its content?"))return;
+    if (selected === "custom") return;
 
- pagesEl.lastElementChild.remove();
+    [pageWidth, pageHeight] = paperSizes[selected];
 
- activeEditor=getEditors().at(-1);
- savedRange=null;
+    if (
+        document.getElementById("orientation").value === "landscape"
+    ) {
+        [pageWidth, pageHeight] = [pageHeight, pageWidth];
+    }
 
- renumberPages();
- saveAuto();
+    document.getElementById("customWidth").value = pageWidth;
+    document.getElementById("customHeight").value = pageHeight;
+
+    updatePaperStyle();
+    paginateAll();
+    saveDocument();
+
 }
 
-function setPaperSize(){
- const choice=document.getElementById("paperSize").value;
+function applyPaper() {
 
- if(choice==="custom")return;
+    const selected = document.getElementById("paperSize").value;
 
- const size=paperSizes[choice];
+    if (selected === "custom") {
 
- if(!size)return;
+        pageWidth = Number(
+            document.getElementById("customWidth").value
+        );
 
- document.getElementById("paperWidth").value=size[0].toFixed(2);
- document.getElementById("paperHeight").value=size[1].toFixed(2);
+        pageHeight = Number(
+            document.getElementById("customHeight").value
+        );
 
- applySettings();
+        if (
+            document.getElementById("orientation").value === "landscape" &&
+            pageWidth < pageHeight
+        ) {
+            [pageWidth, pageHeight] = [pageHeight, pageWidth];
+        }
+
+    } else {
+        changePaper();
+    }
+
+    pageMargin = Number(
+        document.getElementById("margin").value
+    );
+
+    if (
+        !Number.isFinite(pageWidth) ||
+        !Number.isFinite(pageHeight) ||
+        !Number.isFinite(pageMargin) ||
+        pageWidth <= 0 ||
+        pageHeight <= 0 ||
+        pageMargin < 0 ||
+        pageMargin * 2 >= Math.min(pageWidth, pageHeight)
+    ) {
+        alert("Please enter valid paper dimensions and margins.");
+        return;
+    }
+
+    updatePaperStyle();
+    paginateAll();
+    saveDocument();
+
 }
 
-function applySettings(){
- let width=Number(document.getElementById("paperWidth").value);
- let height=Number(document.getElementById("paperHeight").value);
 
- const orientation=document.getElementById("orientation").value;
+/* =========================
+   AUTOMATIC PAGINATION
+========================= */
 
- if(orientation==="landscape"&&height>width){
-  [width,height]=[height,width];
- }
-
- if(orientation==="portrait"&&width>height){
-  [width,height]=[height,width];
- }
-
- const mt=Number(document.getElementById("marginTop").value);
- const mb=Number(document.getElementById("marginBottom").value);
- const ml=Number(document.getElementById("marginLeft").value);
- const mr=Number(document.getElementById("marginRight").value);
-
- if(
-  [width,height,mt,mb,ml,mr].some(v=>!Number.isFinite(v))||
-  width<=0||height<=0||width>100||height>100||
-  [mt,mb,ml,mr].some(v=>v<0||v>5)
- ){
-  alert("Please enter valid paper sizes and margins.");
-  return;
- }
-
- document.documentElement.style.setProperty("--paper-width",width+"in");
- document.documentElement.style.setProperty("--paper-height",height+"in");
- document.documentElement.style.setProperty("--mt",mt+"in");
- document.documentElement.style.setProperty("--mb",mb+"in");
- document.documentElement.style.setProperty("--ml",ml+"in");
- document.documentElement.style.setProperty("--mr",mr+"in");
-
- saveAuto();
- renumberPages();
+function editorOverflows(editor) {
+    return editor.scrollHeight > editor.clientHeight + 2;
 }
 
-function newDocument(){
- if(!confirm("Create a new document? This will replace the current document."))return;
+function getNextEditor(editor) {
 
- pagesEl.innerHTML="";
- savedRange=null;
- activeEditor=null;
- documentName="My-Document";
+    const editors = getEditors();
+    const index = editors.indexOf(editor);
 
- makePage("",true);
- saveAuto();
- renumberPages();
+    if (index >= 0 && editors[index + 1]) {
+        return editors[index + 1];
+    }
+
+    return makePage();
 }
 
-function escapeHTML(value){
- return String(value).replace(/[&<>"']/g,c=>({
-  "&":"&amp;",
-  "<":"&lt;",
-  ">":"&gt;",
-  '"':"&quot;",
-  "'":"&#39;"
- }[c]));
+function paginateAll() {
+
+    if (isPaginating) return;
+
+    isPaginating = true;
+
+    try {
+
+        let safety = 0;
+        let editors = getEditors();
+
+        for (let i = 0; i < editors.length && safety < 200; i++) {
+
+            let editor = editors[i];
+
+            while (editorOverflows(editor) && safety < 200) {
+
+                safety++;
+
+                const last = editor.lastElementChild;
+
+                if (!last) break;
+
+                const next = getNextEditor(editor);
+
+                next.insertBefore(last, next.firstChild);
+
+                if (
+                    editorOverflows(editor) &&
+                    editor.children.length === 1
+                ) {
+                    break;
+                }
+
+            }
+
+            editors = getEditors();
+
+        }
+
+        renumberPages();
+
+    } finally {
+        isPaginating = false;
+    }
+
 }
 
-function createHTML(){
- const width=getComputedStyle(document.documentElement)
-  .getPropertyValue("--paper-width").trim();
 
- const height=getComputedStyle(document.documentElement)
-  .getPropertyValue("--paper-height").trim();
+/* =========================
+   STATUS
+========================= */
 
- const mt=document.getElementById("marginTop").value+"in";
- const mb=document.getElementById("marginBottom").value+"in";
- const ml=document.getElementById("marginLeft").value+"in";
- const mr=document.getElementById("marginRight").value+"in";
+function updateStatus() {
 
- const pageHTML=getEditors().map((ed,i)=>
-  `<section class="paper"><div class="content">${ed.innerHTML}</div></section>`
- ).join("\n");
+    const editors = getEditors();
 
- return `<!DOCTYPE html>
-<html lang="en">
+    const text = editors.map(
+        editor => editor.innerText
+    ).join(" ");
+
+    const words = text.trim()
+        ? text.trim().split(/\s+/).length
+        : 0;
+
+    document.getElementById("pageStatus").textContent =
+        "Pages: " + editors.length;
+
+    document.getElementById("wordStatus").textContent =
+        "Words: " + words;
+
+}
+
+
+/* =========================
+   EXPORT HELPERS
+========================= */
+
+function getExportPages() {
+
+    return getEditors().map(editor => ({
+        html: editor.innerHTML,
+        text: editor.innerText || editor.textContent || ""
+    }));
+
+}
+
+function safeFilename(name) {
+
+    return (name || "My Document")
+        .replace(/[\\/:*?"<>|]/g, "_")
+        .trim() || "My Document";
+
+}
+
+function hasDocumentText(pages) {
+
+    return pages.some(page => page.text.trim().length > 0);
+
+}
+
+
+/* =========================
+   NORMAL DEVICE DOWNLOAD
+========================= */
+
+function downloadFile(blob, filename) {
+
+    try {
+
+        if (!(blob instanceof Blob) || blob.size === 0) {
+            alert("The generated file is empty.");
+            return;
+        }
+
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = filename;
+        link.style.display = "none";
+
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        setTimeout(function() {
+            URL.revokeObjectURL(url);
+        }, 60000);
+
+    } catch (error) {
+
+        console.error(error);
+        alert("Download failed: " + error.message);
+
+    }
+
+}
+
+
+/* =========================
+   HTML DOWNLOAD
+========================= */
+
+function downloadHTML() {
+
+    const pages = getExportPages();
+
+    if (!hasDocumentText(pages)) {
+        alert("There is no text to download.");
+        return;
+    }
+
+    const pageHTML = pages.map(page => `
+        <section class="paper">
+            <div class="page-content">
+                ${page.html}
+            </div>
+        </section>
+    `).join("\n");
+
+    const html = `<!DOCTYPE html>
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escapeHTML(documentName)}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${safeFilename(documentName)}</title>
+
 <style>
-@page{size:${width} ${height};margin:0}
-*{box-sizing:border-box}
-body{margin:0;font-family:"Times New Roman",serif}
-.paper{
- width:${width};
- height:${height};
- padding:${mt} ${mr} ${mb} ${ml};
- overflow:hidden;
- break-after:page;
- page-break-after:always;
+body {
+    margin: 20px;
+    background: #eee;
 }
-.paper:last-child{break-after:auto;page-break-after:auto}
-.content{
- height:100%;
- overflow:hidden;
- overflow-wrap:anywhere;
- font-size:12pt;
- line-height:1.5;
+
+.paper {
+    background: white;
+    width: ${pageWidth}in;
+    height: ${pageHeight}in;
+    margin: 20px auto;
+    overflow: hidden;
+    box-shadow: 0 2px 8px #aaa;
+    page-break-after: always;
 }
-@media screen{
- body{background:#e8edf4;padding:20px}
- .paper{
-  background:white;
-  margin:0 auto 20px;
-  box-shadow:0 2px 12px #0002;
- }
+
+.page-content {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: ${pageMargin}in;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    font-family: Arial;
+    font-size: 12pt;
+    line-height: 1.35;
+}
+
+@media print {
+    body {
+        margin: 0;
+        background: white;
+    }
+
+    .paper {
+        margin: 0;
+        box-shadow: none;
+    }
 }
 </style>
 </head>
-<body>${pageHTML}</body>
+
+<body>
+${pageHTML}
+</body>
 </html>`;
+
+    const blob = new Blob(
+        [html],
+        { type: "text/html;charset=utf-8" }
+    );
+
+    downloadFile(
+        blob,
+        safeFilename(documentName) + ".html"
+    );
+
 }
 
-function downloadFile(content,filename,type){
- const blob=new Blob([content],{type});
- const url=URL.createObjectURL(blob);
 
- const a=document.createElement("a");
- a.href=url;
- a.download=filename;
+/* =========================
+   REAL WORD DOCX DOWNLOAD
+========================= */
 
- document.body.appendChild(a);
- a.click();
- a.remove();
+async function downloadDOCX() {
 
- setTimeout(()=>URL.revokeObjectURL(url),2000);
-}
+    const pages = getExportPages();
 
-function downloadHTML(){
- downloadFile(
-  createHTML(),
-  documentName+".html",
-  "text/html;charset=utf-8"
- );
-
- statusText.textContent="HTML document downloaded";
-}
-
-function downloadPDF(){
- applySettings();
- window.print();
-}
-
-function collectDocumentData(){
- return {
-  version:1,
-  name:documentName,
-  pages:getEditors().map(ed=>ed.innerHTML),
-  settings:{
-   width:document.getElementById("paperWidth").value,
-   height:document.getElementById("paperHeight").value,
-   mt:document.getElementById("marginTop").value,
-   mb:document.getElementById("marginBottom").value,
-   ml:document.getElementById("marginLeft").value,
-   mr:document.getElementById("marginRight").value,
-   orientation:document.getElementById("orientation").value
-  }
- };
-}
-
-function encodeShareData(data){
- const bytes=new TextEncoder().encode(JSON.stringify(data));
- let binary="";
-
- bytes.forEach(byte=>{
-  binary+=String.fromCharCode(byte);
- });
-
- return btoa(binary)
-  .replace(/\+/g,"-")
-  .replace(/\//g,"_")
-  .replace(/=+$/g,"");
-}
-
-function decodeShareData(encoded){
- const base64=encoded
-  .replace(/-/g,"+")
-  .replace(/_/g,"/");
-
- const padded=base64+"=".repeat((4-base64.length%4)%4);
- const binary=atob(padded);
-
- const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
-
- return JSON.parse(new TextDecoder().decode(bytes));
-}
-
-function loadDocumentData(data){
- if(!data||!Array.isArray(data.pages)){
-  throw new Error("Invalid shared document");
- }
-
- restoring=true;
- pagesEl.innerHTML="";
-
- data.pages.forEach(content=>{
-  makePage(String(content??""),false);
- });
-
- if(!getEditors().length){
-  makePage("",false);
- }
-
- documentName=String(data.name||"Shared-Document")
-  .replace(/[\\/\0]/g,"-")
-  .slice(0,100);
-
- const s=data.settings||{};
-
- const fields=[
-  ["paperWidth","width"],
-  ["paperHeight","height"],
-  ["marginTop","mt"],
-  ["marginBottom","mb"],
-  ["marginLeft","ml"],
-  ["marginRight","mr"]
- ];
-
- fields.forEach(([id,key])=>{
-  if(s[key]!=null){
-   document.getElementById(id).value=s[key];
-  }
- });
-
- if(s.orientation){
-  document.getElementById("orientation").value=s.orientation;
- }
-
- restoring=false;
-
- applySettings();
-
- activeEditor=getEditors()[0];
- savedRange=null;
-
- renumberPages();
- saveAuto();
-}
-
-async function shareDocument(){
- try{
-  const data=collectDocumentData();
-  const encoded=encodeShareData(data);
-
-  const baseURL=location.origin+location.pathname+location.search;
-  const shareURL=baseURL+"#sharedDoc="+encoded;
-
-  if(!/^https?:$/.test(location.protocol)){
-   alert("Publish this website on GitHub Pages first. Then Share will create a link that opens the document on your website.");
-   return;
-  }
-
-  if(shareURL.length>60000){
-   alert("This document is too large to fit safely in a share link. Try sharing a shorter document.");
-   return;
-  }
-
-  if(navigator.share){
-   await navigator.share({
-    title:documentName,
-    text:"Open this website link to view and edit the document:",
-    url:shareURL
-   });
-  }else if(navigator.clipboard&&navigator.clipboard.writeText){
-   await navigator.clipboard.writeText(shareURL);
-   alert("Website link copied! Send it to someone. They can open and edit their own copy.");
-  }else{
-   window.prompt("Copy this website link and send it:",shareURL);
-  }
-
- }catch(error){
-  if(error.name!=="AbortError"){
-   console.error(error);
-   alert("Could not share the link. Please try again.");
-  }
- }
-}
-
-function openDocument(event){
- const file=event.target.files?.[0];
-
- if(!file)return;
-
- const reader=new FileReader();
-
- reader.onload=()=>{
-  pagesEl.innerHTML="";
-
-  if(file.name.toLowerCase().endsWith(".txt")){
-   const lines=String(reader.result).split(/\f/);
-
-   lines.forEach(text=>{
-    const ed=makePage("",false);
-    ed.textContent=text;
-   });
-
-  }else{
-   const doc=new DOMParser().parseFromString(
-    String(reader.result),
-    "text/html"
-   );
-
-   const sections=[...doc.querySelectorAll(".paper")];
-
-   if(sections.length){
-    sections.forEach(section=>{
-     const content=section.querySelector(".content,.paper-content");
-
-     makePage(
-      content?content.innerHTML:section.innerHTML,
-      false
-     );
-    });
-
-   }else{
-    const source=doc.querySelector("#pages");
-
-    const oldEditors=source
-     ?[...source.querySelectorAll(".paper-content")]
-     :[];
-
-    if(oldEditors.length){
-     oldEditors.forEach(ed=>makePage(ed.innerHTML,false));
-    }else{
-     makePage(doc.body.innerHTML,false);
+    if (!hasDocumentText(pages)) {
+        alert("There is no text to download.");
+        return;
     }
-   }
-  }
 
-  if(!getEditors().length){
-   makePage("",false);
-  }
-
-  documentName=file.name.replace(/\.[^/.]+$/,"");
-  activeEditor=getEditors()[0];
-  savedRange=null;
-
-  renumberPages();
-  saveAuto();
-
-  statusText.textContent="Opened: "+file.name;
-  event.target.value="";
- };
-
- reader.onerror=()=>alert("Could not open this file.");
-
- reader.readAsText(file);
-}
-
-function saveAuto(){
- if(restoring)return;
-
- clearTimeout(saveTimer);
-
- saveTimer=setTimeout(()=>{
-  try{
-   const data={
-    name:documentName,
-    pages:getEditors().map(ed=>ed.innerHTML),
-    settings:{
-     width:document.getElementById("paperWidth").value,
-     height:document.getElementById("paperHeight").value,
-     mt:document.getElementById("marginTop").value,
-     mb:document.getElementById("marginBottom").value,
-     ml:document.getElementById("marginLeft").value,
-     mr:document.getElementById("marginRight").value,
-     orientation:document.getElementById("orientation").value
+    if (!window.docx) {
+        alert("Word library did not load. Check your internet connection.");
+        return;
     }
-   };
 
-   localStorage.setItem("wordEditorPro",JSON.stringify(data));
+    try {
 
-   statusText.textContent=
-    "Changes automatically saved | Pages: "+getEditors().length;
+        const {
+            Document,
+            Paragraph,
+            TextRun,
+            Packer
+        } = window.docx;
 
-  }catch(e){
-   statusText.textContent="Browser storage unavailable";
-  }
+        const paragraphs = [];
 
-  renumberPages();
+        pages.forEach((page, pageIndex) => {
 
- },400);
-}
+            const lines = page.text.split(/\r?\n/);
 
-function restoreSaved(){
- try{
-  const raw=localStorage.getItem("wordEditorPro");
+            lines.forEach((line, lineIndex) => {
 
-  if(!raw)return false;
+                paragraphs.push(
+                    new Paragraph({
+                        pageBreakBefore:
+                            pageIndex > 0 && lineIndex === 0,
 
-  const data=JSON.parse(raw);
+                        children: [
+                            new TextRun({
+                                text: line || " "
+                            })
+                        ]
+                    })
+                );
 
-  if(!data||!Array.isArray(data.pages))return false;
+            });
 
-  restoring=true;
-  pagesEl.innerHTML="";
+        });
 
-  data.pages.forEach(content=>{
-   makePage(content,false);
-  });
+        const doc = new Document({
 
-  if(!getEditors().length){
-   makePage("",false);
-  }
+            sections: [{
 
-  if(data.name){
-   documentName=data.name;
-  }
+                properties: {
 
-  if(data.settings){
-   const s=data.settings;
+                    page: {
 
-   for(const [id,key] of [
-    ["paperWidth","width"],
-    ["paperHeight","height"],
-    ["marginTop","mt"],
-    ["marginBottom","mb"],
-    ["marginLeft","ml"],
-    ["marginRight","mr"]
-   ]){
-    if(s[key]!=null){
-     document.getElementById(id).value=s[key];
+                        size: {
+                            width: Math.round(pageWidth * 1440),
+                            height: Math.round(pageHeight * 1440)
+                        },
+
+                        margin: {
+                            top: Math.round(pageMargin * 1440),
+                            bottom: Math.round(pageMargin * 1440),
+                            left: Math.round(pageMargin * 1440),
+                            right: Math.round(pageMargin * 1440)
+                        }
+
+                    }
+
+                },
+
+                children: paragraphs
+
+            }]
+
+        });
+
+        const blob = await Packer.toBlob(doc);
+
+        if (!blob || blob.size === 0) {
+            throw new Error("Word file contains no data.");
+        }
+
+        downloadFile(
+            blob,
+            safeFilename(documentName) + ".docx"
+        );
+
+    } catch (error) {
+
+        console.error("DOCX error:", error);
+
+        alert("Word export failed: " + error.message);
+
     }
-   }
 
-   if(s.orientation){
-    document.getElementById("orientation").value=s.orientation;
-   }
-  }
-
-  restoring=false;
-  applySettings();
-
-  activeEditor=getEditors()[0];
-
-  return true;
-
- }catch(e){
-  restoring=false;
-  return false;
- }
 }
 
-document.addEventListener("selectionchange",()=>{
- const sel=window.getSelection();
 
- if(!sel||!sel.rangeCount)return;
+/* =========================
+   PDF DOWNLOAD
+========================= */
 
- const node=sel.getRangeAt(0).commonAncestorContainer;
+function downloadPDF() {
 
- const owner=node.nodeType===1
-  ?node.closest?.(".paper-content")
-  :node.parentElement?.closest(".paper-content");
+    const pages = getExportPages();
 
- if(owner&&owner.isConnected){
-  activeEditor=owner;
-  savedRange=sel.getRangeAt(0).cloneRange();
- }
-});
+    if (!hasDocumentText(pages)) {
+        alert("There is no text to print.");
+        return;
+    }
 
-window.addEventListener("beforeunload",()=>{
- if(saveTimer)clearTimeout(saveTimer);
-});
+    const pageHTML = pages.map(page => `
+        <section class="paper">
+            <div class="page-content">
+                ${page.html}
+            </div>
+        </section>
+    `).join("");
 
-window.addEventListener("load",()=>{
- const sharedMatch=location.hash.match(/^#sharedDoc=(.+)$/);
+    const printWindow = window.open("", "_blank");
 
- if(sharedMatch){
-  try{
-   const sharedData=decodeShareData(sharedMatch[1]);
+    if (!printWindow) {
+        alert("Allow pop-ups in your browser to create a PDF.");
+        return;
+    }
 
-   loadDocumentData(sharedData);
+    printWindow.document.open();
 
-   statusText.textContent=
-    "Shared document loaded | Edit your own copy";
+    printWindow.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
 
-  }catch(error){
-   alert("This shared document link is invalid or incomplete.");
+<title>${safeFilename(documentName)}</title>
 
-   if(!restoreSaved()){
-    makePage("",false);
-    applySettings();
-   }
-  }
+<style>
+@page {
+    size: ${pageWidth}in ${pageHeight}in;
+    margin: 0;
+}
 
- }else if(!restoreSaved()){
-  makePage("",false);
-  applySettings();
- }
+* {
+    box-sizing: border-box;
+}
 
- renumberPages();
-});
+body {
+    margin: 0;
+    background: white;
+}
+
+.paper {
+    width: ${pageWidth}in;
+    height: ${pageHeight}in;
+    overflow: hidden;
+    page-break-after: always;
+    break-after: page;
+}
+
+.page-content {
+    width: 100%;
+    height: 100%;
+    padding: ${pageMargin}in;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    font-family: Arial, sans-serif;
+    font-size: 12pt;
+    line-height: 1.35;
+}
+</style>
+</head>
+
+<body>
+${pageHTML}
+</body>
+</html>`);
+
+    printWindow.document.close();
+
+    setTimeout(function() {
+
+        printWindow.focus();
+        printWindow.print();
+
+    }, 1000);
+
+}
+
+
+/* =========================
+   SHARE DOCUMENT
+========================= */
+
+function shareDocument() {
+
+    const data = {
+
+        name: documentName,
+        width: pageWidth,
+        height: pageHeight,
+        margin: pageMargin,
+
+        pages: getEditors().map(
+            editor => editor.innerHTML
+        )
+
+    };
+
+    const encoded = encodeURIComponent(
+        btoa(
+            unescape(
+                encodeURIComponent(
+                    JSON.stringify(data)
+                )
+            )
+        )
+    );
+
+    const url =
+        location.href.split("#")[0] +
+        "#sharedDoc=" + encoded;
+
+    if (navigator.share) {
+
+        navigator.share({
+
+            title: documentName,
+            text: "Open this document:",
+            url: url
+
+        }).catch(function() {
+            copyShareLink(url);
+        });
+
+    } else {
+
+        copyShareLink(url);
+
+    }
+
+}
+
+function copyShareLink(url) {
+
+    if (
+        navigator.clipboard &&
+        navigator.clipboard.writeText
+    ) {
+
+        navigator.clipboard.writeText(url)
+            .then(() => alert("Share link copied!"))
+            .catch(() => prompt("Copy this link:", url));
+
+    } else {
+
+        prompt("Copy this link:", url);
+
+    }
+
+}
+
+
+/* =========================
+   OPEN FILE
+========================= */
+
+function openFile(event) {
+
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+
+        const content = e.target.result;
+
+        const extension = file.name
+            .split(".")
+            .pop()
+            .toLowerCase();
+
+        pagesContainer.innerHTML = "";
+
+        if (extension === "txt") {
+
+            const editor = makePage();
+
+            editor.innerHTML =
+                "<p>" +
+                escapeHTML(content).replace(/\n/g, "<br>") +
+                "</p>";
+
+        } else {
+
+            const parser = new DOMParser();
+
+            const doc = parser.parseFromString(
+                content,
+                "text/html"
+            );
+
+            const sourcePages =
+                doc.querySelectorAll(".page-content");
+
+            if (sourcePages.length) {
+
+                sourcePages.forEach(page => {
+                    makePage(page.innerHTML);
+                });
+
+            } else {
+
+                makePage(doc.body.innerHTML || content);
+
+            }
+
+        }
+
+        documentName = file.name.replace(/\.[^.]+$/, "");
+
+        paginateAll();
+        updateStatus();
+        saveDocument();
+
+    };
+
+    reader.readAsText(file);
+
+    event.target.value = "";
+
+}
+
+function escapeHTML(value) {
+
+    return String(value).replace(/[&<>"']/g, char => ({
+
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+
+    })[char]);
+
+}
+
+
+/* =========================
+   AUTOSAVE
+========================= */
+
+function saveDocument() {
+
+    const data = {
+
+        name: documentName,
+        width: pageWidth,
+        height: pageHeight,
+        margin: pageMargin,
+
+        pages: getEditors().map(
+            editor => editor.innerHTML
+        )
+
+    };
+
+    try {
+
+        localStorage.setItem(
+            "wordEditorDocument",
+            JSON.stringify(data)
+        );
+
+        document.getElementById("saveStatus").textContent =
+            "Saved";
+
+    } catch (error) {
+
+        document.getElementById("saveStatus").textContent =
+            "Storage unavailable";
+
+    }
+
+}
+
+function loadData(data) {
+
+    pagesContainer.innerHTML = "";
+
+    documentName = data.name || "My Document";
+
+    pageWidth = Number(data.width) || 8.27;
+    pageHeight = Number(data.height) || 11.69;
+    pageMargin = Number(data.margin) || 0.8;
+
+    if (
+        Array.isArray(data.pages) &&
+        data.pages.length
+    ) {
+
+        data.pages.forEach(html => {
+            makePage(html);
+        });
+
+    } else {
+
+        makePage();
+
+    }
+
+    document.getElementById("customWidth").value = pageWidth;
+    document.getElementById("customHeight").value = pageHeight;
+    document.getElementById("margin").value = pageMargin;
+
+    updatePaperStyle();
+    paginateAll();
+    updateStatus();
+
+}
+
+function restoreDocument() {
+
+    const shared = location.hash.match(/sharedDoc=(.*)/);
+
+    if (shared) {
+
+        try {
+
+            const data = JSON.parse(
+                decodeURIComponent(
+                    escape(
+                        atob(
+                            decodeURIComponent(shared[1])
+                        )
+                    )
+                )
+            );
+
+            loadData(data);
+            return;
+
+        } catch (error) {
+
+            console.log("Could not load shared document", error);
+
+        }
+
+    }
+
+    try {
+
+        const stored = localStorage.getItem(
+            "wordEditorDocument"
+        );
+
+        if (stored) {
+
+            loadData(JSON.parse(stored));
+            return;
+
+        }
+
+    } catch (error) {}
+
+    makePage();
+    updateStatus();
+
+}
+
+
+/* =========================
+   START WEBSITE
+========================= */
+
+restoreDocument();
+
 </script>
 
 </body>
